@@ -39,6 +39,46 @@ async function getForecastInfo(id) {
   return data.DailyForecasts;
 }
 
+async function getGeoposition(lat, lon) {
+  const endpoint = 'https://dataservice.accuweather.com/locations/v1/cities/geoposition/search';
+  const query = `?apikey=${API_KEY}&q=${lat},${lon}`;
+  const response = await fetch(endpoint + query);
+  if (!response.ok) throw new Error('Failed to fetch location by coordinates');
+  const data = await response.json();
+  if (!data.Key) throw new Error('Location key missing');
+  return data;
+}
+
+app.get('/geoweather', async (req, res) => {
+  try {
+    const { lat, lon } = req.query;
+    if (!lat || !lon) return res.status(400).json({ error: 'Latitude and longitude required' });
+
+    const details = await getGeoposition(lat, lon);
+    const weather = await getWeatherInfo(details.Key);
+
+    res.json({ details, weather });
+  } catch (err) {
+    console.error('/geoweather error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/geoforecast', async (req, res) => {
+  try {
+    const { lat, lon } = req.query;
+    if (!lat || !lon) return res.status(400).json({ error: 'Latitude and longitude required' });
+
+    const details = await getGeoposition(lat, lon);
+    const forecast = await getForecastInfo(details.Key);
+
+    res.json({ details, forecast });
+  } catch (err) {
+    console.error('/geoforecast error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Weather endpoint
 app.get('/weather', async (req, res) => {
   try {
