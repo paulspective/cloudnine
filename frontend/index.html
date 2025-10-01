@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CloudNine</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@200;400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <h1 class="title">CloudNine</h1>
+
+  <form class="change-location">
+    <input type="text" name="city" class="city-input" placeholder="Enter city... weather or not">
+  </form>
+
+  <div class="memory"></div>
+
+  <div class="weather-wrapper hidden">
+    <!-- Left: Today -->
+    <div class="today">
+
+      <div class="shimmer-wrap">
+        <div class="icon"><img src="" alt="weather icon"></div>
+      </div>
+      <div class="temperature">?&deg;C</div>
+      <div class="condition">Condition</div>
+      <div class="city">City Name</div>
+    </div>
+
+    <!-- Right: 5-day forecast -->
+    <div class="forecast">
+    </div>
+  </div>
+
+  <footer>
+    Powered by <a href="https://developer.accuweather.com/" target="_blank">AccuWeather</a> • Built with 🖤
+  </footer>
+
+  <script src="./app.js"></script>
+</body>
+</html>
