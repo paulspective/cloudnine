@@ -72,4 +72,14 @@ cloudnine/
 
 Powered by AccuWeather  
 
-Built with love, logic, and a little shimmer
+Built with love, logic, and a little shimmer. ✨
+
+---
+
+## 🚀 v1.1 – Shimmer & Sense
+
+- Added geolocation support for automatic weather detection
+- Improved ripple/gradient background transitions
+- Added skeleton shimmer loaders for smoother content loading
+- Smarter refresh logic with tab visibility and condition checks
+- Minor fixes: Cleaner DOM updates and memory line sync
