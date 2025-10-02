@@ -1,20 +1,55 @@
+:root {
+  /* Colors */
+  --color-bg-top: #eceff1;
+  --color-bg-bottom: #607d8b;
+  --color-text: #333;
+  --color-text-light: #555;
+  --color-accent: rgba(255, 255, 255, 0.5);
+  --color-skeleton: #e0e0e0b7;
+  --color-shimmer: rgba(255, 255, 255, 0.5);
+
+  /* Typography */
+  --font-family: 'Poppins', sans-serif;
+  --title-size: 3.5rem;
+  --city-size: 1.4rem;
+  --temp-size: 3rem;
+  --condition-size: 1.2rem;
+
+  /* Layout */
+  --wrapper-width: 90%;
+  --wrapper-max: 900px;
+  --radius-large: 20px;
+  --radius-medium: 12px;
+  --radius-small: 6px;
+
+  /* Skeleton + animation */
+  --shimmer-width: 150px;
+  --shimmer-speed: 1.2s;
+  --pulse-speed: 2.5s;
+  --ripple-duration: 1.2s;
+
+  /* Effects */
+  --shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  font-family: 'Poppins', sans-serif;
+  font-family: var(--font-family);
 }
 
 body {
   min-height: 100vh;
   display: flex;
-  background: linear-gradient(to bottom, #eceff1, #607d8b);
+  background: linear-gradient(to bottom, var(--color-bg-top), var(--color-bg-bottom));
   flex-direction: column;
   align-items: center;
   position: relative;
   z-index: 0;
 }
 
+/* Weather ripple */
 .weather-ripple {
   position: fixed;
   top: 50%;
@@ -48,14 +83,15 @@ body {
   }
 }
 
+/* Title */
 .title {
-  font-size: 3.5rem;
+  font-size: var(--title-size);
   margin: 1rem 0;
-  color: #333;
+  color: var(--color-text);
   text-align: center;
 }
 
-/* Location input styles */
+/* Location input */
 .change-location {
   margin: 1.5rem 0;
   width: 100%;
@@ -67,10 +103,10 @@ body {
   max-width: 400px;
   padding: 1rem;
   font-size: 1rem;
-  border: 2px solid rgba(255, 255, 255, 0.5);
+  border: 2px solid var(--color-accent);
   border-radius: 50px;
   background: rgba(255, 255, 255, 0.1);
-  color: #333;
+  color: var(--color-text);
   backdrop-filter: blur(6px);
   transition: background 0.3s ease, border 0.3s ease;
 }
@@ -85,13 +121,13 @@ body {
   background: rgba(255, 255, 255, 0.2);
 }
 
-/* Memory text styles */
+/* Memory text */
 .memory {
   font-size: 0.9em;
   font-style: italic;
   margin-bottom: 1rem;
   text-align: center;
-  color: #333;
+  color: var(--color-text);
   opacity: 0;
   transition: opacity 1s ease;
 }
@@ -100,13 +136,13 @@ body {
   opacity: 1;
 }
 
-/* Main layout wrapper */
+/* Layout */
 .weather-wrapper {
   display: flex;
   flex-direction: row;
   gap: 2rem;
-  width: 90%;
-  max-width: 900px;
+  width: var(--wrapper-width);
+  max-width: var(--wrapper-max);
   margin: 2rem auto;
 }
 
@@ -114,12 +150,12 @@ body {
   display: none;
 }
 
-/* Today's weather section */
+/* Today section */
 .today {
   flex: 1;
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-  border-radius: 20px;
+  box-shadow: var(--shadow);
+  border-radius: var(--radius-large);
   padding: 2rem;
   display: flex;
   flex-direction: column;
@@ -132,7 +168,6 @@ body {
   z-index: 1;
 }
 
-/* Background shimmer */
 .shimmer-wrap::before {
   content: "";
   position: absolute;
@@ -165,7 +200,7 @@ body {
   z-index: 1;
 }
 
-/* Ripple base styles */
+/* Ripple effect on icon */
 .today .icon::after,
 .today .icon::before {
   content: "";
@@ -174,7 +209,7 @@ body {
   left: 50%;
   width: 120%;
   height: 120%;
-  background: rgba(255, 255, 255, 0.4);
+  background: var(--color-accent);
   border-radius: 50%;
   transform: translate(-50%, -50%) scale(0);
   opacity: 0;
@@ -182,17 +217,14 @@ body {
   z-index: -1;
 }
 
-/* First ripple */
 .today .icon:hover::after {
-  animation: ripple 1.2s ease-out;
+  animation: ripple var(--ripple-duration) ease-out;
 }
 
-/* Second ripple with delay */
 .today .icon:hover::before {
-  animation: ripple 1.2s ease-out 0.3s;
+  animation: ripple var(--ripple-duration) ease-out 0.3s;
 }
 
-/* Ripple animation */
 @keyframes ripple {
   0% {
     transform: translate(-50%, -50%) scale(0);
@@ -216,30 +248,30 @@ body {
 }
 
 .today .city {
-  font-size: 1.4rem;
+  font-size: var(--city-size);
   font-weight: 500;
-  color: #333;
+  color: var(--color-text);
   margin-top: 1rem;
 }
 
 .today .temperature {
-  font-size: 3rem;
+  font-size: var(--temp-size);
   margin: 1rem 0;
-  color: #333;
+  color: var(--color-text);
 }
 
 .today .condition {
-  font-size: 1.2rem;
-  color: #333;
+  font-size: var(--condition-size);
+  color: var(--color-text);
 }
 
-/* 5-day forecast section */
+/* Forecast */
 .forecast {
   flex: 1;
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
-  border-radius: 20px;
+  border-radius: var(--radius-large);
   padding: 1.5rem;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--shadow);
   display: flex;
   flex-direction: column;
   gap: 1rem;
@@ -261,46 +293,58 @@ body {
 .day .weekday {
   flex: 1;
   font-size: 1rem;
-  color: #333;
+  color: var(--color-text);
 }
 
 .day .temp {
   font-size: 1.1rem;
-  color: #333;
+  color: var(--color-text);
   font-weight: 500;
 }
 
-/* Skeleton shimmer base */
+/* Skeleton shimmer */
 .skeleton {
   position: relative;
-  background: #e0e0e0b7;
-  border-radius: 6px;
+  background: var(--color-skeleton);
+  border-radius: var(--radius-small);
   overflow: hidden;
+  animation: pulse var(--pulse-speed) infinite ease-in-out;
 }
 
 .skeleton::after {
   content: "";
   position: absolute;
-  top: 0;
-  left: -150px;
-  width: 150px;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-  animation: shimmer 1s infinite;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, var(--color-shimmer), transparent);
+  transform: translateX(-150%);
+  animation: shimmer var(--shimmer-speed) infinite alternate;
+  will-change: transform;
 }
 
 @keyframes shimmer {
   100% {
-    transform: translateX(100%);
+    transform: translateX(150%);
   }
 }
 
-/* Circular shimmer block for the today icon */
+@keyframes pulse {
+
+  0%,
+  100% {
+    opacity: 0.9;
+  }
+
+  50% {
+    opacity: 0.6;
+  }
+}
+
+/* Circular shimmer block */
 .shimmer-block {
-  width: 150px;
-  height: 150px;
+  width: var(--shimmer-width);
+  height: var(--shimmer-width);
   border-radius: 50%;
-  background: #e0e0e0b7;
+  background: var(--color-skeleton);
   position: relative;
   overflow: hidden;
 }
@@ -308,29 +352,28 @@ body {
 .shimmer-block::after {
   content: "";
   position: absolute;
-  top: 0;
-  left: -150px;
-  width: 150px;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
-  animation: shimmer 1s infinite;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, var(--color-shimmer), transparent);
+  transform: translateX(-150%);
+  animation: shimmer var(--shimmer-speed) infinite alternate;
+  will-change: transform;
 }
 
-/* Forecast skeleton card */
 .day.skeleton {
   height: 70px;
-  border-radius: 12px;
+  border-radius: var(--radius-medium);
 }
 
+/* Footer */
 footer {
   text-align: center;
   padding: 1rem;
   font-size: 0.9rem;
-  color: #555;
+  color: var(--color-text-light);
 }
 
 footer a {
-  color: #555;
+  color: var(--color-text-light);
 }
 
 @media(max-width: 768px) {
