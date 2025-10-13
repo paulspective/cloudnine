@@ -1,55 +1,16 @@
-require('dotenv').config();
+const { getCityInfo, getWeatherInfo, getForecastInfo, getGeoposition } = require('./weather_service');
+
 const express = require('express');
 const cors = require('cors');
+const apicache = require('apicache');
+let cache = apicache.middleware;
 
 const app = express();
 const PORT = 3000;
-const API_KEY = process.env.ACCUWEATHER_KEY;
 
 app.use(cors());
 
-// Weather fetching functions
-async function getCityInfo(city) {
-  const endpoint = 'https://dataservice.accuweather.com/locations/v1/cities/search';
-  const query = `?apikey=${API_KEY}&q=${city}`;
-  const response = await fetch(endpoint + query);
-  if (!response.ok) throw new Error('Failed to fetch city info');
-  const data = await response.json();
-  if (!data.length) throw new Error('City not found');
-  return data[0];
-}
-
-async function getWeatherInfo(id) {
-  const endpoint = 'https://dataservice.accuweather.com/currentconditions/v1/';
-  const query = `${id}?apikey=${API_KEY}`;
-  const response = await fetch(endpoint + query);
-  if (!response.ok) throw new Error('Failed to fetch weather info');
-  const data = await response.json();
-  if (!data[0]) throw new Error('Weather data missing');
-  return data[0];
-}
-
-async function getForecastInfo(id) {
-  const endpoint = 'https://dataservice.accuweather.com/forecasts/v1/daily/5day/';
-  const query = `${id}?apikey=${API_KEY}&metric=true`;
-  const response = await fetch(endpoint + query);
-  if (!response.ok) throw new Error('Failed to fetch forecast info');
-  const data = await response.json();
-  if (!data.DailyForecasts) throw new Error('Forecast data missing');
-  return data.DailyForecasts;
-}
-
-async function getGeoposition(lat, lon) {
-  const endpoint = 'https://dataservice.accuweather.com/locations/v1/cities/geoposition/search';
-  const query = `?apikey=${API_KEY}&q=${lat},${lon}`;
-  const response = await fetch(endpoint + query);
-  if (!response.ok) throw new Error('Failed to fetch location by coordinates');
-  const data = await response.json();
-  if (!data.Key) throw new Error('Location key missing');
-  return data;
-}
-
-app.get('/geoweather', async (req, res) => {
+app.get('/geoweather', cache('10 minutes'), async (req, res) => {
   try {
     const { lat, lon } = req.query;
     if (!lat || !lon) return res.status(400).json({ error: 'Latitude and longitude required' });
@@ -59,12 +20,12 @@ app.get('/geoweather', async (req, res) => {
 
     res.json({ details, weather });
   } catch (err) {
-    console.error('/geoweather error:', err.message);
+    console.error('/geoweather error:', err);
     res.status(500).json({ error: err.message });
   }
 });
 
-app.get('/geoforecast', async (req, res) => {
+app.get('/geoforecast', cache('1 hour'), async (req, res) => {
   try {
     const { lat, lon } = req.query;
     if (!lat || !lon) return res.status(400).json({ error: 'Latitude and longitude required' });
@@ -80,7 +41,7 @@ app.get('/geoforecast', async (req, res) => {
 });
 
 // Weather endpoint
-app.get('/weather', async (req, res) => {
+app.get('/weather', cache('10 minutes'), async (req, res) => {
   try {
     const { city } = req.query;
     if (!city) return res.status(400).json({ error: 'City is required' });
@@ -96,7 +57,7 @@ app.get('/weather', async (req, res) => {
 });
 
 // Forecast endpoint
-app.get('/forecast', async (req, res) => {
+app.get('/forecast', cache('1 hour'), async (req, res) => {
   try {
     const { city } = req.query;
     if (!city) return res.status(400).json({ error: 'City is required' });
