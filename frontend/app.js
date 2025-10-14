@@ -1,9 +1,10 @@
+// DOM Elements 
 const cityForm = document.querySelector('form');
 const weatherWrapper = document.querySelector('.weather-wrapper');
 const forecastContainer = document.querySelector('.forecast');
 const memoryElement = document.querySelector('.memory');
 
-// Helper functions
+// Memory
 function getMemory(city, condition) {
   const skyMood = (condition || '').toLowerCase();
   if (skyMood.includes('rain') || skyMood.includes('showers')) return `Last time in ${city}, the sky was weeping. Let's see what mood it's in now.`;
@@ -16,6 +17,45 @@ function getMemory(city, condition) {
   return `Last time in ${city}, the weather kept quiet. Let's see what it says today.`;
 }
 
+function getOfflineMessage({ city }) {
+  return city ? `You're offline. Showing last known weather for ${city}.` : "You're offline and no previous data is available.";
+}
+
+function updateMemoryLine({ city, condition, isOffline = false }) {
+  memoryElement.textContent = isOffline ? getOfflineMessage({ city }) : getMemory(city, condition);
+  memoryElement.classList.add('loaded');
+}
+
+// State Management
+function saveWeatherState({ city, condition, forecast }) {
+  const forecastSummary = forecast.map(d => d.Day.IconPhrase).join(', ');
+  const state = { city, condition, forecastSummary, lastUpdate: Date.now() };
+  localStorage.setItem('lastWeather', JSON.stringify(state));
+  return state;
+}
+
+function getStoredWeatherState() {
+  return JSON.parse(localStorage.getItem('lastWeather') || '{}');
+}
+
+// Skeletons
+function showSkeletons() {
+  const today = document.querySelector('.today');
+  today.innerHTML = `
+    <div class="shimmer-wrap"><div class="shimmer-block"></div></div>
+    <div class="temperature skeleton" style="width:120px; height:40px;"></div>
+    <div class="condition skeleton" style="width:80%; height:20px;"></div>
+    <div class="city skeleton" style="width:60%; height:20px;"></div>
+  `;
+  forecastContainer.innerHTML = '';
+  for (let i = 0; i < 5; i++) {
+    const div = document.createElement('div');
+    div.className = 'day skeleton';
+    forecastContainer.appendChild(div);
+  }
+}
+
+// Dynamic Background 
 function setDynamicBackground(weather = 'clear') {
   const weatherType = weather.toLowerCase();
   const gradients = {
@@ -33,8 +73,7 @@ function setDynamicBackground(weather = 'clear') {
   const matchedKey = Object.keys(gradients).find(key => key !== 'default' && weatherType.includes(key));
   const newGradient = gradients[matchedKey] || gradients.default;
 
-  const currentBg = document.body.style.background;
-  if (currentBg === newGradient) return;
+  if (document.body.style.background === newGradient) return;
 
   document.querySelectorAll('.weather-ripple, .weather-transition').forEach(el => el.remove());
 
@@ -46,26 +85,17 @@ function setDynamicBackground(weather = 'clear') {
   const transitionLayer = document.createElement('div');
   transitionLayer.className = 'weather-transition';
   Object.assign(transitionLayer.style, {
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    width: '100%',
-    height: '100%',
-    zIndex: -1,
-    background: newGradient,
-    opacity: 0,
-    transition: 'opacity 1s ease',
-    willChange: 'opacity'
+    position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
+    zIndex: -1, background: newGradient, opacity: 0,
+    transition: 'opacity 1s ease', willChange: 'opacity'
   });
   document.body.appendChild(transitionLayer);
 
   requestAnimationFrame(() => transitionLayer.style.opacity = 1);
-
   transitionLayer.addEventListener('transitionend', () => {
     document.body.style.background = newGradient;
     transitionLayer.remove();
   });
-
   setTimeout(() => {
     if (document.body.contains(transitionLayer)) {
       document.body.style.background = newGradient;
@@ -74,45 +104,14 @@ function setDynamicBackground(weather = 'clear') {
   }, 1000);
 }
 
-function showSkeletons() {
-  const today = document.querySelector('.today');
-  today.innerHTML = `
-    <div class="shimmer-wrap"><div class="shimmer-block"></div></div>
-    <div class="temperature skeleton" style="width:120px; height:40px;"></div>
-    <div class="condition skeleton" style="width:80%; height:20px;"></div>
-    <div class="city skeleton" style="width:60%; height:20px;"></div>
-  `;
-  forecastContainer.innerHTML = '';
-  for (let i = 0; i < 5; i++) {
-    const div = document.createElement('div');
-    div.className = 'day skeleton';
-    forecastContainer.appendChild(div);
-  }
-}
-
-// State Management 
-function saveWeatherState({ city, condition, forecast }) {
-  const forecastSummary = forecast.map(d => d.Day.IconPhrase).join(', ');
-  const state = { city, condition, forecastSummary, lastUpdate: Date.now() };
-  localStorage.setItem('lastWeather', JSON.stringify(state));
-  return state;
-}
-
-function getStoredWeatherState() {
-  return JSON.parse(localStorage.getItem('lastWeather') || '{}');
-}
-
-// Fetch functions
+// Fetch 
 async function fetchWeather(city) {
   const [weatherRes, forecastRes] = await Promise.all([
     fetch(`http://localhost:3000/weather?city=${city}`),
     fetch(`http://localhost:3000/forecast?city=${city}`)
   ]);
   if (!weatherRes.ok || !forecastRes.ok) throw new Error('Bad response');
-
-  const weatherData = await weatherRes.json();
-  const forecastData = await forecastRes.json();
-  return { weatherData, forecastData };
+  return { weatherData: await weatherRes.json(), forecastData: await forecastRes.json() };
 }
 
 async function fetchWeatherByCoords(lat, lon) {
@@ -121,39 +120,10 @@ async function fetchWeatherByCoords(lat, lon) {
     fetch(`http://localhost:3000/geoforecast?lat=${lat}&lon=${lon}`)
   ]);
   if (!weatherRes.ok || !forecastRes.ok) throw new Error('Bad response');
-
-  const weatherData = await weatherRes.json();
-  const forecastData = await forecastRes.json();
-  return { weatherData, forecastData };
+  return { weatherData: await weatherRes.json(), forecastData: await forecastRes.json() };
 }
 
-// Geolocation
-function getWeatherByLocation() {
-  if (!navigator.geolocation) return;
-  navigator.geolocation.getCurrentPosition(async position => {
-    const { latitude, longitude } = position.coords;
-    try {
-      const { weatherData, forecastData } = await fetchWeatherByCoords(latitude, longitude);
-      updateUI({ details: weatherData.details, weather: weatherData.weather, forecast: forecastData.forecast });
-      saveWeatherState({
-        city: weatherData.details.EnglishName,
-        condition: weatherData.weather.WeatherText,
-        forecast: forecastData.forecast
-      });
-    } catch (err) {
-      console.error(err);
-      memoryElement.textContent = `Could not fetch your location's weather. Try typing your city.`;
-      memoryElement.classList.add('loaded');
-      weatherWrapper.classList.add('hidden');
-    }
-  }, () => {
-    memoryElement.textContent = `Location access denied. Type your city instead.`;
-    memoryElement.classList.add('loaded');
-    weatherWrapper.classList.add('hidden');
-  });
-}
-
-// UI update
+// UI Update
 function updateUI({ details, weather, forecast }, skipSkeleton = false) {
   if (!skipSkeleton) showSkeletons();
 
@@ -189,35 +159,15 @@ function updateUI({ details, weather, forecast }, skipSkeleton = false) {
   weatherWrapper.classList.remove('hidden');
 }
 
-// Main update function
+// Update City / auto refresh 
 async function updateCity(city) {
   showSkeletons();
-
   try {
     const { weatherData, forecastData } = await fetchWeather(city);
 
-    const storedState = getStoredWeatherState();
-    const conditionChanged = weatherData.weather.WeatherText !== storedState.condition;
-    const forecastSummary = forecastData.forecast.map(d => d.Day.IconPhrase).join(', ');
-    const forecastChanged = forecastSummary !== storedState.forecastSummary;
-
-    setTimeout(() => {
-      updateUI({
-        details: weatherData.details,
-        weather: weatherData.weather,
-        forecast: forecastData.forecast
-      }, !conditionChanged && !forecastChanged);
-
-      memoryElement.textContent = getMemory(city, weatherData.weather.WeatherText);
-      memoryElement.classList.add('loaded');
-
-      saveWeatherState({
-        city: weatherData.details.EnglishName,
-        condition: weatherData.weather.WeatherText,
-        forecast: forecastData.forecast
-      });
-    }, 100);
-
+    updateUI({ details: weatherData.details, weather: weatherData.weather, forecast: forecastData.forecast });
+    updateMemoryLine({ city: weatherData.details.EnglishName, condition: weatherData.weather.WeatherText });
+    saveWeatherState({ city: weatherData.details.EnglishName, condition: weatherData.weather.WeatherText, forecast: forecastData.forecast });
   } catch (err) {
     console.error('Failed to update city:', err);
     memoryElement.textContent = `Could not load data for ${city}. Maybe the sky's keeping secrets.`;
@@ -226,41 +176,25 @@ async function updateCity(city) {
   }
 }
 
-// Auto refresh 
-async function refreshWeatherData() {
-  if (document.hidden) return;
-
+async function refreshWeatherData(force = false) {
   const storedState = getStoredWeatherState();
   if (!storedState.city) return;
 
+  if (!navigator.onLine) {
+    updateMemoryLine({ city: storedState.city, condition: storedState.condition, isOffline: true });
+    showOfflineOverlay();
+    return;
+  } else hideOfflineOverlay();
+
   const minInterval = 10 * 60 * 1000;
-  if (storedState.lastUpdate && Date.now() - storedState.lastUpdate < minInterval) return;
+  if (!force && storedState.lastUpdate && Date.now() - storedState.lastUpdate < minInterval) return;
 
+  showSkeletons();
   try {
-    showSkeletons();
-
-    const { weatherData, forecastData } = await fetchWeather(storedState.city)
-    const conditionChanged = weatherData.weather.WeatherText !== storedState.condition;
-
-    setTimeout(() => {
-      updateUI({
-        details: weatherData.details,
-        weather: weatherData.weather,
-        forecast: forecastData.forecast
-      }, !conditionChanged);
-
-      if (conditionChanged) {
-        memoryElement.textContent = getMemory(storedState.city, weatherData.weather.WeatherText);
-        memoryElement.classList.add('loaded');
-      }
-
-      saveWeatherState({
-        city: weatherData.details.EnglishName,
-        condition: weatherData.weather.WeatherText,
-        forecast: forecastData.forecast
-      });
-    }, 100);
-
+    const { weatherData, forecastData } = await fetchWeather(storedState.city);
+    updateUI({ details: weatherData.details, weather: weatherData.weather, forecast: forecastData.forecast });
+    updateMemoryLine({ city: weatherData.details.EnglishName, condition: weatherData.weather.WeatherText });
+    saveWeatherState({ city: weatherData.details.EnglishName, condition: weatherData.weather.WeatherText, forecast: forecastData.forecast });
   } catch (err) {
     console.error('Failed to refresh weather data:', err);
     memoryElement.textContent = `Could not refresh data for ${storedState.city}. Maybe the sky's keeping secrets.`;
@@ -268,15 +202,69 @@ async function refreshWeatherData() {
   }
 }
 
-let tabActiveTimeout;
-document.addEventListener('visibilitychange', () => {
-  if (!document.hidden) {
-    clearTimeout(tabActiveTimeout);
-    tabActiveTimeout = setTimeout(refreshWeatherData, 300);
+// Geolocation
+function getWeatherByLocation() {
+  if (!navigator.geolocation) return;
+  navigator.geolocation.getCurrentPosition(async pos => {
+    const { latitude, longitude } = pos.coords;
+    try {
+      const { weatherData, forecastData } = await fetchWeatherByCoords(latitude, longitude);
+      updateUI({ details: weatherData.details, weather: weatherData.weather, forecast: forecastData.forecast });
+      updateMemoryLine({ city: weatherData.details.EnglishName, condition: weatherData.weather.WeatherText });
+      saveWeatherState({ city: weatherData.details.EnglishName, condition: weatherData.weather.WeatherText, forecast: forecastData.forecast });
+    } catch {
+      memoryElement.textContent = `Could not fetch your location's weather. Try typing your city.`;
+      memoryElement.classList.add('loaded');
+      weatherWrapper.classList.add('hidden');
+    }
+  }, () => {
+    memoryElement.textContent = `Location access denied. Type your city instead.`;
+    memoryElement.classList.add('loaded');
+    weatherWrapper.classList.add('hidden');
+  });
+}
+
+// Offline/online overlay
+function showOfflineOverlay() {
+  if (document.querySelector('.offline-overlay')) return;
+  const overlay = document.createElement('div');
+  overlay.className = 'offline-overlay';
+  Object.assign(overlay.style, {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
+    background: 'rgba(0,0,0,0.3)',
+    opacity: 0,
+    transition: 'opacity 0.5s ease',
+    zIndex: 9999,
+    pointerEvents: 'none'
+  });
+  document.body.appendChild(overlay);
+  requestAnimationFrame(() => overlay.style.opacity = 1);
+}
+function hideOfflineOverlay() {
+  const overlay = document.querySelector('.offline-overlay');
+  if (!overlay) return;
+  overlay.style.opacity = 0;
+  overlay.addEventListener('transitionend', () => overlay.remove(), { once: true });
+}
+window.addEventListener('offline', () => {
+  const storedState = getStoredWeatherState();
+  updateMemoryLine({ city: storedState.city, condition: storedState.condition, isOffline: true });
+  showOfflineOverlay();
+});
+window.addEventListener('online', () => {
+  hideOfflineOverlay();
+  const storedState = getStoredWeatherState();
+  if (storedState.city) {
+    updateMemoryLine({ city: storedState.city, condition: storedState.condition, isOffline: false });
+    refreshWeatherData(true);
   }
 });
 
-// City submission
+// Event Listeners 
 cityForm.addEventListener('submit', e => {
   e.preventDefault();
   const city = cityForm.city.value.trim();
@@ -284,17 +272,17 @@ cityForm.addEventListener('submit', e => {
   cityForm.reset();
   updateCity(city);
 });
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) setTimeout(refreshWeatherData, 300);
+});
 
-// Initial Load 
+// Initial Load
 window.addEventListener('DOMContentLoaded', () => {
+  const storedState = getStoredWeatherState();
   getWeatherByLocation();
 
-  const storedState = getStoredWeatherState();
   if (storedState.city) {
-    memoryElement.textContent = getMemory(storedState.city, storedState.condition);
-    memoryElement.classList.add('loaded');
-    updateCity(storedState.city);
-  } else {
-    weatherWrapper.classList.add('hidden');
-  }
+    updateMemoryLine({ city: storedState.city, condition: storedState.condition, isOffline: !navigator.onLine });
+    if (navigator.onLine) refreshWeatherData(true);
+  } else weatherWrapper.classList.add('hidden');
 });
