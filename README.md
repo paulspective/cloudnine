@@ -23,7 +23,7 @@ To run CloudNine locally:
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/your-username/cloudnine.git
+git clone https://github.com/paulspective/cloudnine.git
 ```
 
 ### 2. Set up the backend
