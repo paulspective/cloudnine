@@ -59,13 +59,20 @@ Open `index.html` in your browser (use Live Server or any static server).
 cloudnine/
 ├── backend/
 │   ├── server.js
-│   └── .env
+│   └── weather_service.js
 ├── frontend/
-│   ├── .html
-│   ├── app.js
+│   ├── index.html
 │   ├── style.css
-│   └── icons/
-└── assets/
+│   ├── assets/
+│   │   └── icons/
+│   └── scripts/
+│       ├── api.js
+│       ├── ui.js
+│       └── main.js
+├── assets/
+│   └── cloudnine-screenshot.png
+├── .gitignore
+└── README.md
 ```
 
 ## ❤️ Credits
