@@ -1,3 +1,5 @@
+import { memoryElement, weatherWrapper } from "./ui.js";
+
 export async function fetchWeather(city) {
   const [weatherRes, forecastRes] = await Promise.all([
     fetch(`http://localhost:3000/weather?city=${city}`),

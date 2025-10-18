@@ -1,6 +1,7 @@
-const weatherWrapper = document.querySelector('.weather-wrapper');
-const forecastContainer = document.querySelector('.forecast');
-const memoryElement = document.querySelector('.memory');
+import { getStoredWeatherState } from "./main.js";
+export const weatherWrapper = document.querySelector('.weather-wrapper');
+export const forecastContainer = document.querySelector('.forecast');
+export const memoryElement = document.querySelector('.memory');
 
 // Memory line
 export function getMemory(city, condition) {

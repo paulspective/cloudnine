@@ -1,5 +1,5 @@
 import { fetchWeather, getWeatherByLocation } from './api.js';
-import { updateUI, updateMemoryLine, showOfflineOverlay, hideOfflineOverlay, getOfflineMessage, showSkeletons } from './ui.js';
+import { updateUI, updateMemoryLine, showOfflineOverlay, hideOfflineOverlay, getOfflineMessage, showSkeletons, memoryElement, weatherWrapper } from './ui.js';
 
 // State Management 
 function saveWeatherState({ city, condition, forecast }) {
@@ -9,7 +9,7 @@ function saveWeatherState({ city, condition, forecast }) {
   return state;
 }
 
-function getStoredWeatherState() {
+export function getStoredWeatherState() {
   return JSON.parse(localStorage.getItem('lastWeather') || '{}');
 }
 
