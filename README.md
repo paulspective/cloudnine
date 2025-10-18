@@ -6,7 +6,7 @@ CloudNine is a responsive weather app that displays current conditions and a fiv
 
 ## 📸 Screenshot
 
-![CloudNine Preview](frontend/assets/cloudnine-screenshot.png)
+![CloudNine Preview](assets/cloudnine-screenshot.png)
 
 ## ✨ Features
 
