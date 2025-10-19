@@ -2,7 +2,7 @@
 
 **Weather or not, we've got you covered.**
 
-CloudNine is a responsive weather app that displays current conditions and a five-day forecast using AccuWeather data.
+CloudNine is a polished, interactive weather app that taps into the AccuWeather API to deliver real-time forecasts wrapped in smooth animations and a responsive design.
 
 ## 📸 Screenshot
 
