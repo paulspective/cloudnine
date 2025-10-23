@@ -1,4 +1,5 @@
-import { memoryElement, weatherWrapper } from "./ui.js";
+import { memoryElement, weatherWrapper, updateUI } from "./ui.js";
+import { saveWeatherState } from "./main.js";
 
 export async function fetchWeather(city) {
   const [weatherRes, forecastRes] = await Promise.all([

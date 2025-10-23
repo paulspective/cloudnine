@@ -116,7 +116,7 @@ export function showOfflineOverlay() {
     left: 0,
     width: '100%',
     height: '100%',
-    background: 'rgba(0,0,0,0.3)',
+    background: 'rgba(0,0,0,0.23)',
     opacity: 0,
     transition: 'opacity 0.5s ease',
     zIndex: 9999,

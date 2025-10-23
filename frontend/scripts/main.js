@@ -2,7 +2,7 @@ import { fetchWeather, getWeatherByLocation } from './api.js';
 import { updateUI, updateMemoryLine, showOfflineOverlay, hideOfflineOverlay, getOfflineMessage, showSkeletons, memoryElement, weatherWrapper } from './ui.js';
 
 // State Management 
-function saveWeatherState({ city, condition, forecast }) {
+export function saveWeatherState({ city, condition, forecast }) {
   const forecastSummary = forecast.map(d => d.Day.IconPhrase).join(', ');
   const state = { city, condition, forecastSummary, lastUpdate: Date.now() };
   localStorage.setItem('lastWeather', JSON.stringify(state));
