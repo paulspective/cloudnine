@@ -20,18 +20,15 @@ async function updateCity(city) {
   // Offline: show stored weather data
   if (!navigator.onLine) {
     if (storedState.city && storedState.city.toLowerCase() === city.toLowerCase()) {
-      updateUI(
-        {
-          details: { EnglishName: storedState.city },
-          weather: {
-            WeatherText: storedState.condition,
-            WeatherIcon: storedState.icon || 1,
-            Temperature: { Metric: { Value: storedState.temp ?? null } }
-          },
-          forecast: storedState.forecast || []
+      updateUI({
+        details: { EnglishName: storedState.city },
+        weather: {
+          WeatherText: storedState.condition,
+          WeatherIcon: storedState.icon || 1,
+          Temperature: { Metric: { Value: storedState.temp ?? null } }
         },
-        true
-      );
+        forecast: storedState.forecast || []
+      }, true);
 
       updateMemoryLine({
         city: storedState.city,
@@ -59,14 +56,11 @@ async function updateCity(city) {
       JSON.stringify(forecastData.forecast) !== JSON.stringify(storedState.forecast);
 
     setTimeout(() => {
-      updateUI(
-        {
-          details: weatherData.details,
-          weather: weatherData.weather,
-          forecast: forecastData.forecast
-        },
-        !conditionChanged && !forecastChanged
-      );
+      updateUI({
+        details: weatherData.details,
+        weather: weatherData.weather,
+        forecast: forecastData.forecast
+      }, !conditionChanged && !forecastChanged);
 
       const newCity = cityForm.city.value.trim().toLowerCase() !== (storedState.city || '').toLowerCase();
 
@@ -126,14 +120,11 @@ async function refreshWeatherData(force = false) {
       JSON.stringify(forecastData.forecast) !== JSON.stringify(storedState.forecast);
 
     setTimeout(() => {
-      updateUI(
-        {
-          details: weatherData.details,
-          weather: weatherData.weather,
-          forecast: forecastData.forecast
-        },
-        !conditionChanged && !forecastChanged
-      );
+      updateUI({
+        details: weatherData.details,
+        weather: weatherData.weather,
+        forecast: forecastData.forecast
+      }, !conditionChanged && !forecastChanged);
 
       updateMemoryLine({
         city: weatherData.details.EnglishName,
@@ -202,18 +193,15 @@ window.addEventListener('DOMContentLoaded', async () => {
       refreshWeatherData(true);
     } else {
       // Offline: show stored weather data
-      updateUI(
-        {
-          details: { EnglishName: storedState.city },
-          weather: {
-            WeatherText: storedState.condition,
-            WeatherIcon: storedState.icon || 1,
-            Temperature: { Metric: { Value: storedState.temp ?? null } }
-          },
-          forecast: storedState.forecast || []
+      updateUI({
+        details: { EnglishName: storedState.city },
+        weather: {
+          WeatherText: storedState.condition,
+          WeatherIcon: storedState.icon || 1,
+          Temperature: { Metric: { Value: storedState.temp ?? null } }
         },
-        true
-      );
+        forecast: storedState.forecast || []
+      }, true);
 
       updateMemoryLine({
         city: storedState.city,
