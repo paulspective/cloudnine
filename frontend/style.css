@@ -297,7 +297,7 @@ body {
 }
 
 .day .temp {
-  font-size: 1.1rem;
+  font-size: 0.95rem;
   color: var(--color-text);
   font-weight: 500;
 }
@@ -379,5 +379,13 @@ footer a {
 @media(max-width: 768px) {
   .weather-wrapper {
     flex-direction: column;
+  }
+
+  .change-location {
+    max-width: 350px;
+  }
+
+  .city-input {
+    max-width: 350px;
   }
 }

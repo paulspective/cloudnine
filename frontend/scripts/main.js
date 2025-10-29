@@ -1,10 +1,9 @@
 import { fetchWeather, getWeatherByLocation } from './api.js';
 import { updateUI, updateMemoryLine, showOfflineOverlay, hideOfflineOverlay, getOfflineMessage, showSkeletons, memoryElement, weatherWrapper } from './ui.js';
 
-// State Management 
-export function saveWeatherState({ city, condition, forecast }) {
-  const forecastSummary = forecast.map(d => d.Day.IconPhrase).join(', ');
-  const state = { city, condition, forecastSummary, lastUpdate: Date.now() };
+// State Management
+export function saveWeatherState({ city, condition, temp, icon, forecast }) {
+  const state = { city, condition, temp, icon, forecast, lastUpdate: Date.now() };
   localStorage.setItem('lastWeather', JSON.stringify(state));
   return state;
 }
@@ -16,23 +15,59 @@ export function getStoredWeatherState() {
 // Main update function
 async function updateCity(city) {
   showSkeletons();
+  const storedState = getStoredWeatherState();
 
+  // Offline: show stored weather data
+  if (!navigator.onLine) {
+    if (storedState.city && storedState.city.toLowerCase() === city.toLowerCase()) {
+      updateUI(
+        {
+          details: { EnglishName: storedState.city },
+          weather: {
+            WeatherText: storedState.condition,
+            WeatherIcon: storedState.icon || 1,
+            Temperature: { Metric: { Value: storedState.temp ?? null } }
+          },
+          forecast: storedState.forecast || []
+        },
+        true
+      );
+
+      updateMemoryLine({
+        city: storedState.city,
+        condition: storedState.condition,
+        isOffline: true
+      });
+
+      memoryElement.textContent = getOfflineMessage(storedState);
+      memoryElement.classList.add('loaded');
+      showOfflineOverlay();
+    } else {
+      memoryElement.textContent = `Cannot load data for ${city} while offline.`;
+      memoryElement.classList.add('loaded');
+      weatherWrapper.classList.remove('hidden');
+    }
+    return;
+  }
+
+  // Online: fetch weather 
   try {
     const { weatherData, forecastData } = await fetchWeather(city);
 
-    const storedState = getStoredWeatherState();
     const conditionChanged = weatherData.weather.WeatherText !== storedState.condition;
-    const forecastSummary = forecastData.forecast.map(d => d.Day.IconPhrase).join(', ');
-    const forecastChanged = forecastSummary !== storedState.forecastSummary;
+    const forecastChanged =
+      JSON.stringify(forecastData.forecast) !== JSON.stringify(storedState.forecast);
 
     setTimeout(() => {
-      updateUI({
-        details: weatherData.details,
-        weather: weatherData.weather,
-        forecast: forecastData.forecast
-      }, !conditionChanged && !forecastChanged);
+      updateUI(
+        {
+          details: weatherData.details,
+          weather: weatherData.weather,
+          forecast: forecastData.forecast
+        },
+        !conditionChanged && !forecastChanged
+      );
 
-      const storedState = getStoredWeatherState();
       const newCity = cityForm.city.value.trim().toLowerCase() !== (storedState.city || '').toLowerCase();
 
       updateMemoryLine({
@@ -44,10 +79,11 @@ async function updateCity(city) {
       saveWeatherState({
         city: weatherData.details.EnglishName,
         condition: weatherData.weather.WeatherText,
+        temp: weatherData.weather.Temperature.Metric.Value,
+        icon: weatherData.weather.WeatherIcon,
         forecast: forecastData.forecast
       });
     }, 100);
-
   } catch (err) {
     console.error('Failed to update city:', err);
     memoryElement.textContent = `Could not load data for ${city}. Maybe the sky's keeping secrets.`;
@@ -56,7 +92,7 @@ async function updateCity(city) {
   }
 }
 
-// Auto refresh 
+// Auto refresh
 async function refreshWeatherData(force = false) {
   if (document.hidden) return;
 
@@ -67,6 +103,11 @@ async function refreshWeatherData(force = false) {
   if (!navigator.onLine) {
     memoryElement.textContent = getOfflineMessage(storedState);
     memoryElement.classList.add('loaded');
+    updateMemoryLine({
+      city: storedState.city,
+      condition: storedState.condition,
+      isOffline: true
+    });
     showOfflineOverlay();
     return;
   } else {
@@ -79,24 +120,35 @@ async function refreshWeatherData(force = false) {
   try {
     showSkeletons();
     const { weatherData, forecastData } = await fetchWeather(storedState.city);
+
     const conditionChanged = weatherData.weather.WeatherText !== storedState.condition;
+    const forecastChanged =
+      JSON.stringify(forecastData.forecast) !== JSON.stringify(storedState.forecast);
 
     setTimeout(() => {
-      updateUI({
-        details: weatherData.details,
-        weather: weatherData.weather,
-        forecast: forecastData.forecast
-      }, !conditionChanged);
+      updateUI(
+        {
+          details: weatherData.details,
+          weather: weatherData.weather,
+          forecast: forecastData.forecast
+        },
+        !conditionChanged && !forecastChanged
+      );
 
-      updateMemoryLine({ city: weatherData.details.EnglishName, condition: weatherData.weather.WeatherText, isOffline: false });
+      updateMemoryLine({
+        city: weatherData.details.EnglishName,
+        condition: weatherData.weather.WeatherText,
+        isOffline: false
+      });
 
       saveWeatherState({
         city: weatherData.details.EnglishName,
         condition: weatherData.weather.WeatherText,
+        temp: weatherData.weather.Temperature.Metric.Value,
+        icon: weatherData.weather.WeatherIcon,
         forecast: forecastData.forecast
       });
     }, 100);
-
   } catch (err) {
     console.error('Failed to refresh weather data:', err);
     memoryElement.textContent = `Could not refresh data for ${storedState.city}. Maybe the sky's keeping secrets.`;
@@ -104,6 +156,7 @@ async function refreshWeatherData(force = false) {
   }
 }
 
+// Visibility refresh
 let tabActiveTimeout;
 document.addEventListener('visibilitychange', () => {
   if (!document.hidden) {
@@ -112,10 +165,14 @@ document.addEventListener('visibilitychange', () => {
   }
 });
 
-// Hook offline/online events
+// Offline/Online events
 window.addEventListener('offline', () => {
   const storedState = getStoredWeatherState();
-  updateMemoryLine({ city: storedState.city, condition: storedState.condition, isOffline: true });
+  updateMemoryLine({
+    city: storedState.city,
+    condition: storedState.condition,
+    isOffline: true
+  });
   showOfflineOverlay();
 });
 
@@ -125,7 +182,7 @@ window.addEventListener('online', async () => {
   if (storedState.city) await refreshWeatherData(true);
 });
 
-// City submission
+// City form
 const cityForm = document.querySelector('form');
 cityForm.addEventListener('submit', e => {
   e.preventDefault();
@@ -135,14 +192,40 @@ cityForm.addEventListener('submit', e => {
   updateCity(city);
 });
 
-// Initial Load 
-window.addEventListener('DOMContentLoaded', () => {
-  getWeatherByLocation();
-
+// Initial Load
+window.addEventListener('DOMContentLoaded', async () => {
   const storedState = getStoredWeatherState();
+
   if (storedState.city) {
-    refreshWeatherData(true);
+    // Online: fetch latest weather
+    if (navigator.onLine) {
+      refreshWeatherData(true);
+    } else {
+      // Offline: show stored weather data
+      updateUI(
+        {
+          details: { EnglishName: storedState.city },
+          weather: {
+            WeatherText: storedState.condition,
+            WeatherIcon: storedState.icon || 1,
+            Temperature: { Metric: { Value: storedState.temp ?? null } }
+          },
+          forecast: storedState.forecast || []
+        },
+        true
+      );
+
+      updateMemoryLine({
+        city: storedState.city,
+        condition: storedState.condition,
+        isOffline: true
+      });
+
+      memoryElement.textContent = getOfflineMessage(storedState);
+      memoryElement.classList.add('loaded');
+      showOfflineOverlay();
+    }
   } else {
-    weatherWrapper.classList.add('hidden');
+    getWeatherByLocation();
   }
 });

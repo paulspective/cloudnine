@@ -18,13 +18,29 @@ export function getMemory(city, condition) {
 
 export function updateMemoryLine({ city, condition, isOffline = false, isFresh = false }) {
   const storedState = getStoredWeatherState();
+
   if (isOffline) {
     memoryElement.textContent = getOfflineMessage(storedState);
-  } else if (isFresh) {
+    memoryElement.classList.add('loaded');
+    return;
+  }
+
+  if (isFresh) {
     memoryElement.textContent = `Here's what the sky has to say about ${city}.`;
+    memoryElement.classList.add('loaded');
+    return;
+  }
+
+  if (storedState && storedState.city) {
+    if (city && storedState.city.toLowerCase() === city.toLowerCase()) {
+      memoryElement.textContent = getMemory(storedState.city, storedState.condition);
+    } else {
+      memoryElement.textContent = getMemory(city || storedState.city, condition || storedState.condition);
+    }
   } else {
     memoryElement.textContent = getMemory(city, condition);
   }
+
   memoryElement.classList.add('loaded');
 }
 
@@ -150,33 +166,64 @@ export function updateUI({ details, weather, forecast }, skipSkeleton = false) {
   if (!skipSkeleton) showSkeletons();
 
   const today = document.querySelector('.today');
+
+  // Safe access for all weather fields
+  const tempValue = weather?.Temperature?.Metric?.Value;
+  const tempDisplay =
+    typeof tempValue === 'number' && !isNaN(tempValue)
+      ? `${Math.round(tempValue)}°C`
+      : '--°C';
+
+  const condition = weather?.WeatherText || 'Unknown';
+  const icon = weather?.WeatherIcon || 1;
+  const cityName = details?.EnglishName || 'Unknown location';
+
   today.innerHTML = `
     <div class="shimmer-wrap">
-      <div class="icon"><img src="./icons/${weather.WeatherIcon}.svg" alt="${weather.WeatherText}"></div>
+      <div class="icon"><img src="./icons/${icon}.svg" alt="${condition}"></div>
     </div>
-    <div class="temperature">${Math.round(weather.Temperature.Metric.Value)}&deg;C</div>
-    <div class="condition">${weather.WeatherText}</div>
-    <div class="city">${details.EnglishName}</div>
+    <div class="temperature">${tempDisplay}</div>
+    <div class="condition">${condition}</div>
+    <div class="city">${cityName}</div>
   `;
 
-  setDynamicBackground(weather.WeatherText);
+  setDynamicBackground(condition);
 
   forecastContainer.innerHTML = '';
-  forecast.forEach(day => {
-    const date = new Date(day.Date);
-    const todayDate = new Date();
-    const isToday = date.toDateString() === todayDate.toDateString();
-    const weekday = isToday ? 'Today' : date.toLocaleDateString('en-US', { weekday: 'short' });
 
+  // Handle missing or empty forecast data
+  if (Array.isArray(forecast) && forecast.length > 0) {
+    forecast.forEach(day => {
+      const date = new Date(day.Date);
+      const todayDate = new Date();
+      const isToday = date.toDateString() === todayDate.toDateString();
+      const weekday = isToday
+        ? 'Today'
+        : date.toLocaleDateString('en-US', { weekday: 'short' });
+
+      const maxTemp = day?.Temperature?.Maximum?.Value;
+      const minTemp = day?.Temperature?.Minimum?.Value;
+
+      const tempText =
+        typeof maxTemp === 'number' && typeof minTemp === 'number'
+          ? `H ${Math.round(maxTemp)}°C / L ${Math.round(minTemp)}°C`
+          : '--°C';
+
+      const div = document.createElement('div');
+      div.classList.add('day');
+      div.innerHTML = `
+        <img src="./icons/${day?.Day?.Icon || 1}.svg" alt="">
+        <div class="weekday">${weekday}</div>
+        <div class="temp">${tempText}</div>
+      `;
+      forecastContainer.appendChild(div);
+    });
+  } else {
     const div = document.createElement('div');
     div.classList.add('day');
-    div.innerHTML = `
-      <img src="./icons/${day.Day.Icon}.svg" alt="">
-      <div class="weekday">${weekday}</div>
-      <div class="temp">H ${Math.round(day.Temperature.Maximum.Value)}°C / L ${Math.round(day.Temperature.Minimum.Value)}°C</div>
-    `;
+    div.textContent = 'No forecast data available.';
     forecastContainer.appendChild(div);
-  });
+  }
 
   weatherWrapper.classList.remove('hidden');
 }

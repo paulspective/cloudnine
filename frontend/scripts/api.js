@@ -1,4 +1,4 @@
-import { memoryElement, weatherWrapper, updateUI } from "./ui.js";
+import { memoryElement, updateMemoryLine, weatherWrapper, updateUI } from "./ui.js";
 import { saveWeatherState } from "./main.js";
 
 export async function fetchWeather(city) {
@@ -32,10 +32,20 @@ export function getWeatherByLocation() {
     try {
       const { weatherData, forecastData } = await fetchWeatherByCoords(latitude, longitude);
       updateUI({ details: weatherData.details, weather: weatherData.weather, forecast: forecastData.forecast });
+
       saveWeatherState({
         city: weatherData.details.EnglishName,
         condition: weatherData.weather.WeatherText,
+        temp: weatherData.weather?.Temperature?.Metric?.Value ?? '--',
+        icon: weatherData.weather.WeatherIcon,
         forecast: forecastData.forecast
+      });
+
+      updateMemoryLine({
+        city: weatherData.details.EnglishName,
+        condition: weatherData.weather.WeatherText,
+        isFresh: true,
+        isOffline: false
       });
     } catch (err) {
       console.error(err);
