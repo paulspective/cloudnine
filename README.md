@@ -75,9 +75,16 @@ cloudnine/
 └── README.md
 ```
 
+## 🧰 Tech Stack
+- Frontend: HTML, CSS, JavaScript (Vanilla)
+- Backend: Node.js, Express
+- API: AccuWeather
+- Tools: Git, Live Server, npm
+
+
 ## ❤️ Credits
 
-Powered by AccuWeather  
+Uses data from AccuWeather API 
 
 Built with love, logic, and a little shimmer. ✨
 
@@ -90,8 +97,6 @@ Built with love, logic, and a little shimmer. ✨
 - Added skeleton shimmer loaders for smoother content loading
 - Smarter refresh logic with tab visibility and condition checks
 - Minor fixes: Cleaner DOM updates and memory line sync
-
----
 
 ## 🚀 v2.0 – Always Aware
 
