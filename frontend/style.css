@@ -18,7 +18,7 @@
   /* Layout */
   --wrapper-width: 90%;
   --wrapper-max: 900px;
-  --radius-large: 20px;
+  --radius-large: 30px;
   --radius-medium: 12px;
   --radius-small: 6px;
 
@@ -319,15 +319,7 @@ body {
   position: absolute;
   inset: 0;
   background: linear-gradient(90deg, transparent, var(--color-shimmer), transparent);
-  transform: translateX(-150%);
-  animation: shimmer var(--shimmer-speed) infinite alternate;
   will-change: transform;
-}
-
-@keyframes shimmer {
-  100% {
-    transform: translateX(150%);
-  }
 }
 
 @keyframes pulse {
@@ -338,7 +330,7 @@ body {
   }
 
   50% {
-    opacity: 0.6;
+    opacity: 0.5;
   }
 }
 
