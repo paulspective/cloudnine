@@ -45,7 +45,12 @@ export function updateMemoryLine({ city, condition, isOffline = false, isFresh =
 }
 
 // Dynamic background
+let isTransitioning = false;
+
 export function setDynamicBackground(weather = 'clear') {
+  if (isTransitioning) return;
+  isTransitioning = true;
+
   const weatherType = weather.toLowerCase();
   const gradients = {
     rain: 'linear-gradient(135deg, #3AB4B4, #7B8D9E)',
@@ -59,48 +64,31 @@ export function setDynamicBackground(weather = 'clear') {
     haze: 'linear-gradient(135deg, #D7CCC8, #BCAAA4)',
     default: 'linear-gradient(135deg, #4A90E2, #F5C542)'
   };
-  const matchedKey = Object.keys(gradients).find(key => key !== 'default' && weatherType.includes(key));
+
+  const matchedKey = Object.keys(gradients).find(
+    key => key !== 'default' && weatherType.includes(key)
+  );
   const newGradient = gradients[matchedKey] || gradients.default;
 
-  const currentBg = document.body.style.background;
-  if (currentBg === newGradient) return;
+  const currentBg = document.body.dataset.bgGradient;
+  if (currentBg === newGradient) {
+    isTransitioning = false;
+    return;
+  }
 
-  document.querySelectorAll('.weather-ripple, .weather-transition').forEach(el => el.remove());
+  if (!document.body.style.transition.includes('background')) {
+    document.body.style.transition = 'background 1s ease';
+  }
 
   const rippleLayer = document.createElement('div');
   rippleLayer.className = 'weather-ripple';
   document.body.appendChild(rippleLayer);
   rippleLayer.addEventListener('animationend', () => rippleLayer.remove());
 
-  const transitionLayer = document.createElement('div');
-  transitionLayer.className = 'weather-transition';
-  Object.assign(transitionLayer.style, {
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    width: '100%',
-    height: '100%',
-    zIndex: -1,
-    background: newGradient,
-    opacity: 0,
-    transition: 'opacity 1s ease',
-    willChange: 'opacity'
-  });
-  document.body.appendChild(transitionLayer);
+  document.body.style.background = newGradient;
+  document.body.dataset.bgGradient = newGradient;
 
-  requestAnimationFrame(() => transitionLayer.style.opacity = 1);
-
-  transitionLayer.addEventListener('transitionend', () => {
-    document.body.style.background = newGradient;
-    transitionLayer.remove();
-  });
-
-  setTimeout(() => {
-    if (document.body.contains(transitionLayer)) {
-      document.body.style.background = newGradient;
-      transitionLayer.remove();
-    }
-  }, 1000);
+  setTimeout(() => (isTransitioning = false), 1000);
 }
 
 // UI skeletons

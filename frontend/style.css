@@ -11,8 +11,8 @@
   /* Typography */
   --font-family: 'Poppins', sans-serif;
   --title-size: 3.5rem;
-  --city-size: 1.4rem;
-  --temp-size: 3rem;
+  --city-size: 1.5rem;
+  --temp-size: 2.8rem;
   --condition-size: 1.2rem;
 
   /* Layout */
@@ -54,13 +54,13 @@ body {
   position: fixed;
   top: 50%;
   left: 50%;
-  width: 200vmax;
-  height: 200vmax;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0) 70%);
+  width: 160vmax;
+  height: 160vmax;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0.25) 30%, rgba(255, 255, 255, 0.1) 70%, rgba(255, 255, 255, 0) 100%);
   border-radius: 50%;
-  animation: rippleEffect 1s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: rippleEffect 1.2s cubic-bezier(0.4, 0, 0.2, 1);
   pointer-events: none;
-  z-index: -1;
+  z-index: 0;
   will-change: transform, opacity;
 }
 
@@ -87,6 +87,8 @@ body {
   margin: 1rem 0;
   color: var(--color-text);
   text-align: center;
+  letter-spacing: -2px;
+  font-weight: 400;
 }
 
 /* Location input */
@@ -249,7 +251,7 @@ body {
 
 .today .city {
   font-size: var(--city-size);
-  font-weight: 500;
+  font-weight: 300;
   color: var(--color-text);
   margin-top: 1rem;
 }
@@ -258,6 +260,7 @@ body {
   font-size: var(--temp-size);
   margin: 1rem 0;
   color: var(--color-text);
+  font-weight: 300;
 }
 
 .today .condition {
