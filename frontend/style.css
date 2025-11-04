@@ -4,9 +4,9 @@
   --color-bg-bottom: #607d8b;
   --color-text: #333;
   --color-text-light: #555;
-  --color-accent: rgba(255, 255, 255, 0.7);
+  --color-accent: rgba(255, 255, 255, 0.65);
   --color-skeleton: #e0e0e0b7;
-  --color-shimmer: rgba(255, 255, 255, 0.5);
+  --card-border: rgba(255, 255, 255, 0.27);
 
   /* Typography */
   --font-family: 'Poppins', sans-serif;
@@ -18,18 +18,17 @@
   /* Layout */
   --wrapper-width: 90%;
   --wrapper-max: 900px;
-  --radius-large: 30px;
+  --radius-large: 25px;
   --radius-medium: 12px;
   --radius-small: 6px;
 
   /* Skeleton + animation */
   --shimmer-width: 150px;
-  --shimmer-speed: 1s;
   --pulse-speed: 1s;
   --ripple-duration: 1s;
 
   /* Effects */
-  --shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 * {
@@ -56,7 +55,7 @@ body {
   left: 50%;
   width: 120vmax;
   height: 120vmax;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0.25) 30%, rgba(255, 255, 255, 0.1) 70%, rgba(255, 255, 255, 0) 100%);
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0.25) 30%, rgba(255, 255, 255, 0.1) 60%, rgba(255, 255, 255, 0) 100%);
   border-radius: 50%;
   animation: rippleEffect 1.2s cubic-bezier(0.4, 0, 0.2, 1);
   pointer-events: none;
@@ -105,7 +104,7 @@ body {
   max-width: 400px;
   padding: 1rem;
   font-size: 1rem;
-  border: 2px solid var(--color-accent);
+  border: 1px solid var(--color-accent);
   border-radius: 50px;
   background: rgba(255, 255, 255, 0.1);
   color: var(--color-text);
@@ -119,8 +118,8 @@ body {
 
 .city-input:focus {
   outline: none;
-  border: 2px solid rgba(0, 0, 0, 0.3);
-  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(0, 0, 0, 0.3);
+  background: rgba(255, 255, 255, 0.27);
 }
 
 /* Memory text */
@@ -160,6 +159,7 @@ body {
   border-radius: var(--radius-large);
   padding: 2rem;
   display: flex;
+  border: 1px solid var(--card-border);
   flex-direction: column;
   align-items: center;
 }
@@ -274,6 +274,7 @@ body {
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
   border-radius: var(--radius-large);
   padding: 1.5rem;
+  border: 1px solid var(--card-border);
   box-shadow: var(--shadow);
   display: flex;
   flex-direction: column;
@@ -302,7 +303,7 @@ body {
 .day .temp {
   font-size: 0.95rem;
   color: var(--color-text);
-  font-weight: 500;
+  font-weight: 300;
 }
 
 /* Skeleton shimmer */
@@ -319,7 +320,6 @@ body {
   position: absolute;
   inset: 0;
   background: linear-gradient(90deg, transparent, var(--color-shimmer), transparent);
-  will-change: transform;
 }
 
 @keyframes pulse {
@@ -342,6 +342,8 @@ body {
   background: var(--color-skeleton);
   position: relative;
   overflow: hidden;
+  margin-bottom: 2rem;
+  animation: pulse var(--pulse-speed) infinite ease-in-out;
 }
 
 .shimmer-block::after {
@@ -349,9 +351,6 @@ body {
   position: absolute;
   inset: 0;
   background: linear-gradient(90deg, transparent, var(--color-shimmer), transparent);
-  transform: translateX(-150%);
-  animation: shimmer var(--shimmer-speed) infinite alternate;
-  will-change: transform;
 }
 
 .day.skeleton {
