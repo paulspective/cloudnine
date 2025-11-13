@@ -63,8 +63,6 @@ cloudnine/
 ├── frontend/
 │   ├── index.html
 │   ├── style.css
-│   ├── assets/
-│   │   └── icons/
 │   └── scripts/
 │       ├── api.js
 │       ├── ui.js
