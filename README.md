@@ -58,13 +58,13 @@ Open `index.html` in your browser (use Live Server or any static server).
 ```
 cloudnine/
 ├── backend/
+│   ├── .env
 │   ├── server.js
 │   └── weather_service.js
 ├── frontend/
 │   ├── index.html
 │   ├── style.css
-│   ├── assets/
-│   │   └── icons/
+│   ├── icons/
 │   └── scripts/
 │       ├── api.js
 │       ├── ui.js
