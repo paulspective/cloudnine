@@ -64,7 +64,6 @@ cloudnine/
 ├── frontend/
 │   ├── index.html
 │   ├── style.css
-│   ├── icons/
 │   └── scripts/
 │       ├── api.js
 │       ├── ui.js
