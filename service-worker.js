@@ -6,7 +6,10 @@ const FILES_TO_CACHE = [
   `./frontend/style.css`,
   `./frontend/scripts/ui.js`,
   `./frontend/scripts/api.js`,
-  `./frontend/scripts/main.js`
+  `./frontend/scripts/main.js`,
+  `./frontend/font/Poppins-Light.ttf`,
+  `./frontend/font/Poppins-LightItalic.ttf`,
+  `./frontend/font/Poppins-Regular.tff`
 ];
 
 self.addEventListener('install', event => {
