@@ -4,9 +4,8 @@
   --color-bg-bottom: #607d8b;
   --color-text: #333;
   --color-text-light: #555;
-  --color-accent: rgba(255, 255, 255, 0.65);
+  --color-accent: rgba(255, 255, 255, 0.17);
   --color-skeleton: #e0e0e0b7;
-  --card-border: rgba(255, 255, 255, 0.27);
 
   /* Typography */
   --font-family: 'Poppins', sans-serif;
@@ -72,11 +71,11 @@ body {
   position: fixed;
   top: 50%;
   left: 50%;
-  width: 120vmax;
-  height: 120vmax;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0.25) 30%, rgba(255, 255, 255, 0.1) 60%, rgba(255, 255, 255, 0) 100%);
+  width: 140vmax;
+  height: 140vmax;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0.25) 30%, rgba(255, 255, 255, 0.1) 60%, transparent 100%);
   border-radius: 50%;
-  animation: rippleEffect 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: rippleEffect 1.6s cubic-bezier(0.4, 0, 0.2, 1);
   pointer-events: none;
   z-index: 0;
   will-change: transform, opacity;
@@ -94,7 +93,7 @@ body {
   }
 
   100% {
-    transform: translate(-50%, -50%) scale(1.6);
+    transform: translate(-50%, -50%) scale(1.4);
     opacity: 0;
   }
 }
@@ -137,7 +136,7 @@ body {
 
 .city-input:focus {
   outline: none;
-  border: 1px solid rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.37);
   background: rgba(255, 255, 255, 0.27);
 }
 
@@ -178,7 +177,7 @@ body {
   border-radius: var(--radius-large);
   padding: 2rem;
   display: flex;
-  border: 1px solid var(--card-border);
+  border: 1px solid var(--color-accent);
   flex-direction: column;
   align-items: center;
 }
@@ -228,9 +227,9 @@ body {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 120%;
-  height: 120%;
-  background: var(--color-accent);
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.45);
   border-radius: 50%;
   transform: translate(-50%, -50%) scale(0);
   opacity: 0;
@@ -293,7 +292,7 @@ body {
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
   border-radius: var(--radius-large);
   padding: 1.5rem;
-  border: 1px solid var(--card-border);
+  border: 1px solid var(--color-accent);
   box-shadow: var(--shadow);
   display: flex;
   flex-direction: column;
