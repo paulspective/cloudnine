@@ -1,5 +1,5 @@
 import { memoryElement, updateMemoryLine, weatherWrapper, updateUI } from "./ui.js";
-import { saveWeatherState } from "./main.js";
+import { saveWeatherState } from "../scripts/main.js";
 
 // Utility to fetch and parse JSON
 async function fetchJson(url) {
@@ -8,21 +8,18 @@ async function fetchJson(url) {
   return res.json();
 }
 
-// Base URL can come from environment or be passed in
-const BASE_URL = process.env.API_BASE_URL || "http://localhost:3000";
-
-export async function fetchWeather(city, baseUrl = BASE_URL) {
+export async function fetchWeather(city) {
   const [weatherData, forecastData] = await Promise.all([
-    fetchJson(`${baseUrl}/weather?city=${encodeURIComponent(city)}`),
-    fetchJson(`${baseUrl}/forecast?city=${encodeURIComponent(city)}`)
+    fetchJson(`/weather?city=${encodeURIComponent(city)}`),
+    fetchJson(`/forecast?city=${encodeURIComponent(city)}`)
   ]);
   return { weatherData, forecastData };
 }
 
-export async function fetchWeatherByCoords(lat, lon, baseUrl = BASE_URL) {
+export async function fetchWeatherByCoords(lat, lon) {
   const [weatherData, forecastData] = await Promise.all([
-    fetchJson(`${baseUrl}/geoweather?lat=${lat}&lon=${lon}`),
-    fetchJson(`${baseUrl}/geoforecast?lat=${lat}&lon=${lon}`)
+    fetchJson(`/geoweather?lat=${lat}&lon=${lon}`),
+    fetchJson(`/geoforecast?lat=${lat}&lon=${lon}`)
   ]);
   return { weatherData, forecastData };
 }

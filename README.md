@@ -57,23 +57,25 @@ Open `index.html` in your browser (use Live Server or any static server).
 
 ```
 cloudnine/
-├── backend/
+├── app/
 │   ├── .env
 │   ├── server.js
-│   └── weather_service.js
-├── frontend/
-│   ├── index.html
-│   ├── style.css
-│   └── scripts/
-│       ├── api.js
-│       ├── ui.js
-│       └── main.js
+│   ├── weather_service.js
+│   └── public/
+│       ├── index.html
+│       ├── style.css
+│       ├── manifest.json
+│       ├── service-worker.js
+│       ├── favicons/
+│       ├── font/
+│       ├── icons/
+│       └── scripts/
+│           ├── api.js
+│           ├── ui.js
+│           └── main.js
 ├── assets/
-│   ├── cloudnine-screenshot.png
-│   └── favicons/
+│   └── cloudnine-screenshot.png
 ├── .gitignore
-├── service-worker.js
-├── manifest.json
 └── README.md
 ```
 
