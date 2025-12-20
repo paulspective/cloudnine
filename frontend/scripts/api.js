@@ -1,27 +1,29 @@
 import { memoryElement, updateMemoryLine, weatherWrapper, updateUI } from "./ui.js";
 import { saveWeatherState } from "./main.js";
 
-export async function fetchWeather(city) {
-  const [weatherRes, forecastRes] = await Promise.all([
-    fetch(`http://localhost:3000/weather?city=${city}`),
-    fetch(`http://localhost:3000/forecast?city=${city}`)
-  ]);
-  if (!weatherRes.ok || !forecastRes.ok) throw new Error('Bad response');
+// Utility to fetch and parse JSON
+async function fetchJson(url) {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Bad response from ${url}`);
+  return res.json();
+}
 
-  const weatherData = await weatherRes.json();
-  const forecastData = await forecastRes.json();
+// Base URL can come from environment or be passed in
+const BASE_URL = process.env.API_BASE_URL || "http://localhost:3000";
+
+export async function fetchWeather(city, baseUrl = BASE_URL) {
+  const [weatherData, forecastData] = await Promise.all([
+    fetchJson(`${baseUrl}/weather?city=${encodeURIComponent(city)}`),
+    fetchJson(`${baseUrl}/forecast?city=${encodeURIComponent(city)}`)
+  ]);
   return { weatherData, forecastData };
 }
 
-async function fetchWeatherByCoords(lat, lon) {
-  const [weatherRes, forecastRes] = await Promise.all([
-    fetch(`http://localhost:3000/geoweather?lat=${lat}&lon=${lon}`),
-    fetch(`http://localhost:3000/geoforecast?lat=${lat}&lon=${lon}`)
+export async function fetchWeatherByCoords(lat, lon, baseUrl = BASE_URL) {
+  const [weatherData, forecastData] = await Promise.all([
+    fetchJson(`${baseUrl}/geoweather?lat=${lat}&lon=${lon}`),
+    fetchJson(`${baseUrl}/geoforecast?lat=${lat}&lon=${lon}`)
   ]);
-  if (!weatherRes.ok || !forecastRes.ok) throw new Error('Bad response');
-
-  const weatherData = await weatherRes.json();
-  const forecastData = await forecastRes.json();
   return { weatherData, forecastData };
 }
 
