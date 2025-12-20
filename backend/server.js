@@ -6,7 +6,7 @@ const apicache = require('apicache');
 let cache = apicache.middleware;
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 
@@ -75,4 +75,10 @@ app.get('/forecast', cache('1 hour'), async (req, res) => {
 // Start server
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
+});
+
+// Error logging
+app.use((err, req, res, next) => {
+  console.error('Unexpected error:', err);
+  res.status(500).json({ error: 'Internal server error' });
 });
