@@ -24,14 +24,17 @@ To run CloudNine locally:
 
 ```bash
 git clone https://github.com/paulspective/cloudnine.git
+cd cloudnine
 ```
 
-### 2. Set up the backend
+### 2. Install dependencies
 
 ```bash
-cd cloudnine/backend
+cd app
 npm install
 ```
+
+### 3. Set up environment
 
 Create a `.env` file and add your AccuWeather API key:
 
@@ -39,19 +42,12 @@ Create a `.env` file and add your AccuWeather API key:
 ACCUWEATHER_KEY=your_actual_api_key
 ```
 
-Start the server:
+### 4. Start the server 
 
 ```bash
 npm run dev
 ```
-
-### 3. Launch the frontend
-
-```bash
-cd ../frontend
-```
-
-Open `index.html` in your browser (use Live Server or any static server).
+Open your browser at `http:localhost:PORT` (default 3000).
 
 ## 🧠 Architecture
 
@@ -60,8 +56,8 @@ cloudnine/
 ├── app/
 │   ├── .env
 │   ├── server.js
-│   ├── weather_service.js
-│   └── public/
+│   └── weather_service.js
+├── public/
 │       ├── index.html
 │       ├── style.css
 │       ├── manifest.json
@@ -76,6 +72,7 @@ cloudnine/
 ├── assets/
 │   └── cloudnine-screenshot.png
 ├── .gitignore
+├── CHANGELOG.md
 └── README.md
 ```
 
@@ -91,21 +88,3 @@ cloudnine/
 Uses data from AccuWeather API 
 
 Built with love, logic, and a little shimmer. ✨
-
----
-
-## 🚀 v2.0 – Always Aware
-
-- Added offline persistence: CloudNine now retains the last known weather data even after refresh or loss of connection.
-- Auto-updates when connection is restored — no manual refresh needed.
-- Enhanced background ripple and weather transitions.
-- Improved caching logic and API response handling.
-- Refined UI polish for smoother loading and idle states.
-
-## 🚀 v1.1 – Shimmer & Sense
-
-- Added geolocation support for automatic weather detection
-- Improved ripple/gradient background transitions
-- Added skeleton shimmer loaders for smoother content loading
-- Smarter refresh logic with tab visibility and condition checks
-- Minor fixes: Cleaner DOM updates and memory line sync
