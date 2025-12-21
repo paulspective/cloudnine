@@ -88,3 +88,5 @@ cloudnine/
 Uses data from AccuWeather API 
 
 Built with love, logic, and a little shimmer. ✨
+
+See [Changelog](CHANGELOG.md) for a detailed version history.
