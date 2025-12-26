@@ -82,7 +82,7 @@ app.listen(PORT, () => {
 });
 
 // Error logging
-app.use((err, req, res, next) => {
+app.use((err, req, res) => {
   console.error('Unexpected error:', err);
   res.status(500).json({ error: 'Internal server error' });
 });
