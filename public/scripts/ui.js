@@ -1,4 +1,5 @@
-import { getStoredWeatherState } from "./main.js";
+import { getMostRecentCity } from './db.js';
+
 export const weatherWrapper = document.querySelector('.weather-wrapper');
 export const forecastContainer = document.querySelector('.forecast');
 export const memoryElement = document.querySelector('.memory');
@@ -16,8 +17,8 @@ export function getMemory(city, condition) {
   return `Last time in ${city}, the weather kept quiet. Let's see what it says today.`;
 }
 
-export function updateMemoryLine({ city, condition, isOffline = false, isFresh = false }) {
-  const storedState = getStoredWeatherState();
+export async function updateMemoryLine({ city, condition, isOffline = false, isFresh = false }) {
+  const storedState = await getMostRecentCity();
 
   if (isOffline) {
     memoryElement.textContent = getOfflineMessage(storedState);
@@ -51,7 +52,7 @@ export function setDynamicBackground(weather = 'clear') {
   if (isTransitioning) return;
   isTransitioning = true;
 
-  const weatherType = weather.toLowerCase();
+  const weatherType = (weather || '').toLowerCase();
   const gradients = {
     rain: 'linear-gradient(135deg, #3AB4B4, #7B8D9E)',
     drizzle: 'linear-gradient(135deg, #3AB4B4, #7B8D9E)',
@@ -94,6 +95,8 @@ export function setDynamicBackground(weather = 'clear') {
 // UI skeletons
 export function showSkeletons() {
   const today = document.querySelector('.today');
+  if (!today) return;
+
   today.innerHTML = `
     <div class="shimmer-wrap"><div class="shimmer-block"></div></div>
     <div class="temperature skeleton" style="width:120px; height:40px;"></div>
@@ -140,13 +143,8 @@ export function hideOfflineOverlay() {
 }
 
 export function getOfflineMessage(storedState) {
-  if (!storedState.city) return "You're offline and no previous data is available.";
-
-  if (storedState.city) {
-    return `You're offline. Showing last known weather for ${storedState.city}.`;
-  } else {
-    return `You're offline.`;
-  }
+  if (!storedState || !storedState.city) return "You're offline and no previous data is available.";
+  return `You're offline. Showing last known weather for ${storedState.city}.`;
 }
 
 // UI update 
@@ -154,6 +152,7 @@ export function updateUI({ details, weather, forecast }, skipSkeleton = false) {
   if (!skipSkeleton) showSkeletons();
 
   const today = document.querySelector('.today');
+  if (!today) return;
 
   // Safe access for all weather fields
   const tempValue = weather?.Temperature?.Metric?.Value;
@@ -209,7 +208,10 @@ export function updateUI({ details, weather, forecast }, skipSkeleton = false) {
   } else {
     const div = document.createElement('div');
     div.classList.add('day');
-    div.textContent = 'No forecast data available.';
+    div.innerHTML = `
+      <div class="weekday">No Data</div>
+      <div class="temp">--°C</div>
+    `;
     forecastContainer.appendChild(div);
   }
 
