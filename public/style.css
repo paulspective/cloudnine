@@ -144,9 +144,9 @@ body {
   margin-bottom: 0.5rem;
   font-size: 0.9em;
   color: var(--color-text);
-  display: flex;
+  display: none;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   flex-wrap: wrap;
 }
 
@@ -155,7 +155,7 @@ body {
   border: 1px solid var(--color-accent);
   border-radius: 20px;
   padding: 5px 12px;
-  margin: 2px;
+  margin: 5px;
   cursor: pointer;
   font-size: 0.85em;
   color: var(--color-text);
