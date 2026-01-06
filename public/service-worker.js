@@ -7,6 +7,7 @@ const FILES_TO_CACHE = [
   '/scripts/ui.js',
   '/scripts/api.js',
   '/scripts/main.js',
+  '/scripts/db.js',
   '/font/Poppins-Light.ttf',
   '/font/Poppins-LightItalic.ttf',
   '/font/Poppins-Regular.ttf'
