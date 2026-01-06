@@ -82,7 +82,8 @@ app.listen(PORT, () => {
 });
 
 // Error logging
-app.use((err, req, res) => {
+app.use((err, req, res, next) => {
   console.error('Unexpected error:', err);
+  if (res.headersSent) return next(err);
   res.status(500).json({ error: 'Internal server error' });
 });
