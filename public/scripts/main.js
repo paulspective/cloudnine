@@ -24,16 +24,21 @@ async function renderSavedCities(currentCity) {
     !currentCity || c.city.toLowerCase() !== currentCity.toLowerCase()
   );
 
-  // Show only the 2 most recent (excluding current)
-  filtered
-    .sort((a, b) => b.lastUpdate - a.lastUpdate)
-    .slice(0, 2)
-    .forEach(c => {
-      const btn = document.createElement('button');
-      btn.textContent = c.city;
-      btn.addEventListener('click', () => updateCity(c.city));
-      container.appendChild(btn);
-    });
+  if (filtered.length > 0) {
+    filtered
+      .sort((a, b) => b.lastUpdate - a.lastUpdate)
+      .slice(0, 2)
+      .forEach(c => {
+        const btn = document.createElement('button');
+        btn.textContent = c.city;
+        btn.addEventListener('click', () => updateCity(c.city));
+        container.appendChild(btn);
+      });
+
+    container.parentElement.style.display = 'flex';
+  } else {
+    container.parentElement.style.display = 'none';
+  }
 }
 
 // Main update function
