@@ -1,5 +1,3 @@
-import { getMostRecentCity } from './db.js';
-
 export const weatherWrapper = document.querySelector('.weather-wrapper');
 export const forecastContainer = document.querySelector('.forecast');
 export const memoryElement = document.querySelector('.memory');
