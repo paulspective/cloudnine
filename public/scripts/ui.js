@@ -18,10 +18,10 @@ export function getMemory(city, condition) {
 }
 
 export async function updateMemoryLine({ city, condition, isOffline = false, isFresh = false }) {
-  const storedState = await getMostRecentCity();
+  if (!city) return;
 
   if (isOffline) {
-    memoryElement.textContent = getOfflineMessage(storedState);
+    memoryElement.textContent = getOfflineMessage(city);
     memoryElement.classList.add('loaded');
     return;
   }
@@ -30,16 +30,6 @@ export async function updateMemoryLine({ city, condition, isOffline = false, isF
     memoryElement.textContent = `Here's what the sky has to say about ${city}.`;
     memoryElement.classList.add('loaded');
     return;
-  }
-
-  if (storedState && storedState.city) {
-    if (city && storedState.city.toLowerCase() === city.toLowerCase()) {
-      memoryElement.textContent = getMemory(storedState.city, storedState.condition);
-    } else {
-      memoryElement.textContent = getMemory(city || storedState.city, condition || storedState.condition);
-    }
-  } else {
-    memoryElement.textContent = getMemory(city, condition);
   }
 
   memoryElement.classList.add('loaded');
@@ -142,9 +132,9 @@ export function hideOfflineOverlay() {
   overlay.addEventListener('transitionend', () => overlay.remove(), { once: true });
 }
 
-export function getOfflineMessage(storedState) {
-  if (!storedState || !storedState.city) return "You're offline and no previous data is available.";
-  return `You're offline. Showing last known weather for ${storedState.city}.`;
+export function getOfflineMessage(city) {
+  if (!city) return "You're offline and no previous data is available.";
+  return `You're offline. Showing last known weather for ${city}.`;
 }
 
 // UI update 

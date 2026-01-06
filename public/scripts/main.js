@@ -70,8 +70,6 @@ async function updateCity(city) {
         isOffline: true
       });
 
-      memoryElement.textContent = getOfflineMessage(match);
-      memoryElement.classList.add('loaded');
       showOfflineOverlay();
     } else {
       memoryElement.textContent = `Cannot load data for ${city} while offline.`;
@@ -227,40 +225,11 @@ cityForm.addEventListener('submit', e => {
 
 // Initial Load
 window.addEventListener('DOMContentLoaded', async () => {
-  const storedCity = await getMostRecentCity();
-  if (storedCity) {
-    renderSavedCities(storedCity.city);
-  }
-
   const storedCities = await getStoredCities();
 
   if (storedCities.length > 0) {
-    if (navigator.onLine) {
-      refreshWeatherData(true);
-    } else {
-      // Show all stored cities offline
-      storedCities.forEach(city => {
-        updateUI({
-          details: { EnglishName: city.city },
-          weather: {
-            WeatherText: city.condition,
-            WeatherIcon: city.icon || 1,
-            Temperature: { Metric: { Value: city.temp ?? null } }
-          },
-          forecast: city.forecast || []
-        }, true);
-
-        updateMemoryLine({
-          city: city.city,
-          condition: city.condition,
-          isOffline: true
-        });
-      });
-
-      memoryElement.textContent = getOfflineMessage(storedCities[0]); // show message for most recent
-      memoryElement.classList.add('loaded');
-      showOfflineOverlay();
-    }
+    await updateCity(storedCities[0].city);
+    renderSavedCities(storedCities[0].city);
   } else {
     getWeatherByLocation();
   }
