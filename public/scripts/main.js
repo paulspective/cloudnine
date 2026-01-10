@@ -70,6 +70,7 @@ async function updateCity(city) {
         isOffline: true
       });
 
+      getOfflineMessage(match);
       showOfflineOverlay();
     } else {
       memoryElement.textContent = `Cannot load data for ${city} while offline.`;
