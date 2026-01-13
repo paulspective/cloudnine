@@ -44,14 +44,14 @@ async function renderSavedCities(currentCity) {
 // Main update function
 async function updateCity(city) {
   showSkeletons();
-  const storedCity = await getMostRecentCity();
 
-  // Offline: show stored weather data
+  const storedCity = await getMostRecentCity();
+  const cityLower = city.toLowerCase();
+
+  // Offline: try to load from IndexedDB
   if (!navigator.onLine) {
     const storedCities = await getStoredCities();
-    const match = storedCities.find(
-      c => c.city.toLowerCase() === city.toLowerCase()
-    );
+    const match = storedCities.find(c => c.city.toLowerCase() === cityLower);
 
     if (match) {
       updateUI({
@@ -77,42 +77,51 @@ async function updateCity(city) {
       memoryElement.classList.add('loaded');
       weatherWrapper.classList.remove('hidden');
     }
+
     return;
   }
 
-  // Online: fetch weather
+  // Online: fetch fresh data
   try {
+    hideOfflineOverlay();
     const { weatherData, forecastData } = await fetchWeather(city);
 
-    const conditionChanged = !storedCity || weatherData.weather.WeatherText !== storedCity.condition;
-    const forecastChanged = !storedCity || JSON.stringify(forecastData.forecast) !== JSON.stringify(storedCity.forecast);
+    const oldForecast = storedCity?.forecast || [];
+    const newForecast = forecastData.forecast || [];
 
-    setTimeout(async () => {
-      updateUI({
-        details: weatherData.details,
-        weather: weatherData.weather,
-        forecast: forecastData.forecast
-      }, !conditionChanged && !forecastChanged);
+    const conditionChanged =
+      !storedCity ||
+      weatherData.weather.WeatherText !== storedCity.condition;
 
-      const newCity = !storedCity || city.toLowerCase() !== storedCity.city.toLowerCase();
+    const forecastChanged =
+      JSON.stringify(newForecast) !== JSON.stringify(oldForecast);
 
-      updateMemoryLine({
-        city: weatherData.details.EnglishName,
-        condition: weatherData.weather.WeatherText,
-        isFresh: newCity
-      });
+    updateUI({
+      details: weatherData.details,
+      weather: weatherData.weather,
+      forecast: newForecast
+    }, !conditionChanged && !forecastChanged);
 
-      await addCity(weatherData.details.EnglishName, {
-        condition: weatherData.weather.WeatherText,
-        temp: weatherData.weather.Temperature.Metric.Value,
-        icon: weatherData.weather.WeatherIcon,
-        forecast: forecastData.forecast
-      });
-      await trimStore();
+    const newCity =
+      !storedCity || cityLower !== storedCity.city.toLowerCase();
 
-      // Render recent cities excluding the current one
-      renderSavedCities(weatherData.details.EnglishName);
-    }, 100);
+    updateMemoryLine({
+      city: weatherData.details.EnglishName,
+      condition: weatherData.weather.WeatherText,
+      isFresh: newCity
+    });
+
+    await addCity(weatherData.details.EnglishName, {
+      condition: weatherData.weather.WeatherText,
+      temp: weatherData.weather.Temperature.Metric.Value,
+      icon: weatherData.weather.WeatherIcon,
+      forecast: newForecast
+    });
+
+    await trimStore();
+
+    renderSavedCities(weatherData.details.EnglishName);
+
   } catch (err) {
     console.error('Failed to update city:', err);
     memoryElement.textContent = `Could not load data for ${city}. Maybe the sky's keeping secrets.`;
