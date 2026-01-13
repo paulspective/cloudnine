@@ -162,30 +162,28 @@ async function refreshWeatherData(force = false) {
     const conditionChanged = weatherData.weather.WeatherText !== storedCity.condition;
     const forecastChanged = JSON.stringify(forecastData.forecast) !== JSON.stringify(storedCity.forecast);
 
-    setTimeout(async () => {
-      updateUI({
-        details: weatherData.details,
-        weather: weatherData.weather,
-        forecast: forecastData.forecast
-      }, !conditionChanged && !forecastChanged);
+    updateUI({
+      details: weatherData.details,
+      weather: weatherData.weather,
+      forecast: forecastData.forecast
+    }, !conditionChanged && !forecastChanged);
 
-      updateMemoryLine({
-        city: weatherData.details.EnglishName,
-        condition: weatherData.weather.WeatherText,
-        isOffline: false
-      });
+    updateMemoryLine({
+      city: weatherData.details.EnglishName,
+      condition: weatherData.weather.WeatherText,
+      isOffline: false
+    });
 
-      await addCity(weatherData.details.EnglishName, {
-        condition: weatherData.weather.WeatherText,
-        temp: weatherData.weather.Temperature.Metric.Value,
-        icon: weatherData.weather.WeatherIcon,
-        forecast: forecastData.forecast
-      });
-      await trimStore();
+    await addCity(weatherData.details.EnglishName, {
+      condition: weatherData.weather.WeatherText,
+      temp: weatherData.weather.Temperature.Metric.Value,
+      icon: weatherData.weather.WeatherIcon,
+      forecast: forecastData.forecast
+    });
+    await trimStore();
 
-      // Render recent cities excluding the current one
-      renderSavedCities(weatherData.details.EnglishName);
-    }, 100);
+    // Render recent cities excluding the current one
+    renderSavedCities(weatherData.details.EnglishName);
   } catch (err) {
     console.error('Failed to refresh weather data:', err);
     memoryElement.textContent = `Could not refresh data for ${storedCity.city}. Maybe the sky's keeping secrets.`;
