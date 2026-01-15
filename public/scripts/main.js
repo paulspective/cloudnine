@@ -10,91 +10,99 @@ import {
   weatherWrapper
 } from './ui.js';
 
-import { addCity, getMostRecentCity, getStoredCities, trimStore } from './db.js';
+import {
+  addCity,
+  getMostRecentCity,
+  getStoredCities,
+  getCityByName,
+  trimStore
+} from './db.js';
 
-// Render saved cities excluding the current one
-async function renderSavedCities(currentCity) {
-  const cities = await getStoredCities();
-  const container = document.getElementById('recentCitiesList');
-  if (!container) return;
-  container.innerHTML = '';
-
-  // Filter out the currently displayed city
-  const filtered = cities.filter(c =>
-    !currentCity || c.city.toLowerCase() !== currentCity.toLowerCase()
-  );
-
-  if (filtered.length > 0) {
-    filtered
-      .sort((a, b) => b.lastUpdate - a.lastUpdate)
-      .slice(0, 2)
-      .forEach(c => {
-        const btn = document.createElement('button');
-        btn.textContent = c.city;
-        btn.addEventListener('click', () => updateCity(c.city));
-        container.appendChild(btn);
-      });
-
-    container.parentElement.style.display = 'flex';
-  } else {
-    container.parentElement.style.display = 'none';
-  }
+// Check if forecast has changed
+function hasForecastChanged(a = [], b = []) {
+  return JSON.stringify(a) !== JSON.stringify(b);
 }
 
-// Main update function
+// Render saved cities
+async function renderSavedCities(currentCity) {
+  const container = document.getElementById('recentCitiesList');
+  if (!container) return;
+
+  const cities = await getStoredCities();
+  const filtered = cities.filter(c =>
+    !currentCity || c.city !== currentCity
+  );
+
+  container.innerHTML = '';
+
+  if (!filtered.length) {
+    container.parentElement.style.display = 'none';
+    return;
+  }
+
+  filtered
+    .sort((a, b) => b.lastUpdate - a.lastUpdate)
+    .slice(0, 2)
+    .forEach(c => {
+      const btn = document.createElement('button');
+      btn.textContent = c.city;
+      btn.addEventListener('click', () => updateCity(c.city));
+      container.appendChild(btn);
+    });
+
+  container.parentElement.style.display = 'flex';
+}
+
+// Update city weather data
 async function updateCity(city) {
   showSkeletons();
 
-  const storedCity = await getMostRecentCity();
-  const cityLower = city.toLowerCase();
+  const storedCity = await getCityByName(city);
 
-  // Offline: try to load from IndexedDB
+  // Offline: use stored data
   if (!navigator.onLine) {
-    const storedCities = await getStoredCities();
-    const match = storedCities.find(c => c.city.toLowerCase() === cityLower);
-
-    if (match) {
-      updateUI({
-        details: { EnglishName: match.city },
-        weather: {
-          WeatherText: match.condition,
-          WeatherIcon: match.icon || 1,
-          Temperature: { Metric: { Value: match.temp ?? null } }
-        },
-        forecast: match.forecast || []
-      }, true);
-
-      updateMemoryLine({
-        city: match.city,
-        condition: match.condition,
-        isOffline: true
-      });
-
-      getOfflineMessage(match);
-      showOfflineOverlay();
-    } else {
+    if (!storedCity) {
       memoryElement.textContent = `Cannot load data for ${city} while offline.`;
       memoryElement.classList.add('loaded');
       weatherWrapper.classList.remove('hidden');
+      return;
     }
 
+    updateUI({
+      details: { EnglishName: storedCity.city },
+      weather: {
+        WeatherText: storedCity.condition,
+        WeatherIcon: storedCity.icon || 1,
+        Temperature: { Metric: { Value: storedCity.temp ?? null } }
+      },
+      forecast: storedCity.forecast || []
+    }, true);
+
+    updateMemoryLine({
+      city: storedCity.city,
+      condition: storedCity.condition,
+      isOffline: true
+    });
+
+    getOfflineMessage(storedCity);
+    showOfflineOverlay();
     return;
   }
 
   // Online: fetch fresh data
   try {
     hideOfflineOverlay();
+
     const { weatherData, forecastData } = await fetchWeather(city);
 
-    const oldForecast = storedCity?.forecast || [];
     const newForecast = forecastData.forecast || [];
-
     const conditionChanged =
       !storedCity ||
       weatherData.weather.WeatherText !== storedCity.condition;
 
     const forecastChanged =
-      JSON.stringify(newForecast) !== JSON.stringify(oldForecast);
+      !storedCity ||
+      hasForecastChanged(newForecast, storedCity.forecast);
 
     updateUI({
       details: weatherData.details,
@@ -102,13 +110,10 @@ async function updateCity(city) {
       forecast: newForecast
     }, !conditionChanged && !forecastChanged);
 
-    const newCity =
-      !storedCity || cityLower !== storedCity.city.toLowerCase();
-
     updateMemoryLine({
       city: weatherData.details.EnglishName,
       condition: weatherData.weather.WeatherText,
-      isFresh: newCity
+      isFresh: !storedCity
     });
 
     await addCity(weatherData.details.EnglishName, {
@@ -119,7 +124,6 @@ async function updateCity(city) {
     });
 
     await trimStore();
-
     renderSavedCities(weatherData.details.EnglishName);
 
   } catch (err) {
@@ -130,17 +134,14 @@ async function updateCity(city) {
   }
 }
 
-// Auto refresh
+// Refresh weather data
 async function refreshWeatherData(force = false) {
   if (document.hidden) return;
 
   const storedCity = await getMostRecentCity();
   if (!storedCity) return;
 
-  // Skip refresh if offline
   if (!navigator.onLine) {
-    memoryElement.textContent = getOfflineMessage(storedCity);
-    memoryElement.classList.add('loaded');
     updateMemoryLine({
       city: storedCity.city,
       condition: storedCity.condition,
@@ -148,19 +149,22 @@ async function refreshWeatherData(force = false) {
     });
     showOfflineOverlay();
     return;
-  } else {
-    hideOfflineOverlay();
   }
 
+  hideOfflineOverlay();
+
   const minInterval = 10 * 60 * 1000;
-  if (!force && storedCity.lastUpdate && Date.now() - storedCity.lastUpdate < minInterval) return;
+  if (!force && Date.now() - storedCity.lastUpdate < minInterval) return;
 
   try {
     showSkeletons();
+
     const { weatherData, forecastData } = await fetchWeather(storedCity.city);
 
-    const conditionChanged = weatherData.weather.WeatherText !== storedCity.condition;
-    const forecastChanged = JSON.stringify(forecastData.forecast) !== JSON.stringify(storedCity.forecast);
+    const conditionChanged =
+      weatherData.weather.WeatherText !== storedCity.condition;
+    const forecastChanged =
+      hasForecastChanged(forecastData.forecast, storedCity.forecast);
 
     updateUI({
       details: weatherData.details,
@@ -180,18 +184,19 @@ async function refreshWeatherData(force = false) {
       icon: weatherData.weather.WeatherIcon,
       forecast: forecastData.forecast
     });
-    await trimStore();
 
-    // Render recent cities excluding the current one
+    await trimStore();
     renderSavedCities(weatherData.details.EnglishName);
+
   } catch (err) {
     console.error('Failed to refresh weather data:', err);
-    memoryElement.textContent = `Could not refresh data for ${storedCity.city}. Maybe the sky's keeping secrets.`;
+    memoryElement.textContent =
+      `Could not refresh data for ${storedCity.city}. Maybe the sky's keeping secrets.`;
     memoryElement.classList.add('loaded');
   }
 }
 
-// Visibility refresh
+// Tab visibility change
 let tabActiveTimeout;
 document.addEventListener('visibilitychange', () => {
   if (!document.hidden) {
@@ -200,44 +205,39 @@ document.addEventListener('visibilitychange', () => {
   }
 });
 
-// Offline/Online events
 window.addEventListener('offline', async () => {
-  const storedCities = await getStoredCities();
-  if (storedCities.length > 0) {
-    storedCities.forEach(city => {
-      updateMemoryLine({
-        city: city.city,
-        condition: city.condition,
-        isOffline: true
-      });
-    });
-    showOfflineOverlay();
-  }
+  const city = await getMostRecentCity();
+  if (!city) return;
+
+  updateMemoryLine({
+    city: city.city,
+    condition: city.condition,
+    isOffline: true
+  });
+  showOfflineOverlay();
 });
 
 window.addEventListener('online', async () => {
   hideOfflineOverlay();
-  const storedCity = await getMostRecentCity();
-  if (storedCity) await refreshWeatherData(true);
+  await refreshWeatherData(true);
 });
 
-// City form
+// City form submission
 const cityForm = document.querySelector('form');
 cityForm.addEventListener('submit', e => {
   e.preventDefault();
-  const city = cityForm.city.value.trim().toLowerCase();
+  const city = cityForm.city.value.trim();
   if (!city) return;
   cityForm.reset();
   updateCity(city);
 });
 
-// Initial Load
+// Initial load
 window.addEventListener('DOMContentLoaded', async () => {
-  const storedCities = await getStoredCities();
+  const storedCity = await getMostRecentCity();
 
-  if (storedCities.length > 0) {
-    await updateCity(storedCities[0].city);
-    renderSavedCities(storedCities[0].city);
+  if (storedCity) {
+    await updateCity(storedCity.city);
   } else {
     getWeatherByLocation();
   }
