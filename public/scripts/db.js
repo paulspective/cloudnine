@@ -1,5 +1,5 @@
 const DB_NAME = 'cloudnine';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 const STORE_NAME = 'weather';
 
 let dbPromise = null;
@@ -12,8 +12,15 @@ export function openDB() {
 
     request.onupgradeneeded = event => {
       const db = event.target.result;
+      let store;
+
       if (!db.objectStoreNames.contains(STORE_NAME)) {
-        const store = db.createObjectStore(STORE_NAME, { keyPath: 'cityKey' });
+        store = db.createObjectStore(STORE_NAME, { keyPath: 'cityKey' });
+      } else {
+        store = event.target.transaction.objectStore(STORE_NAME);
+      }
+
+      if (!store.indexNames.contains('lastUpdate')) {
         store.createIndex('lastUpdate', 'lastUpdate');
       }
     };
