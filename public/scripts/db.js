@@ -13,7 +13,8 @@ export function openDB() {
     request.onupgradeneeded = event => {
       const db = event.target.result;
       if (!db.objectStoreNames.contains(STORE_NAME)) {
-        db.createObjectStore(STORE_NAME, { keyPath: 'city' });
+        const store = db.createObjectStore(STORE_NAME, { keyPath: 'cityKey' });
+        store.createIndex('lastUpdate', 'lastUpdate');
       }
     };
 
@@ -29,33 +30,18 @@ export async function addCity(city, data) {
   const tx = db.transaction(STORE_NAME, 'readwrite');
   const store = tx.objectStore(STORE_NAME);
 
-  store.put({ city, ...data, lastUpdate: Date.now() });
+  const cityKey = city.toLowerCase();
+
+  store.put({
+    cityKey,
+    city,
+    ...data,
+    lastUpdate: Date.now()
+  });
 
   return new Promise((resolve, reject) => {
     tx.oncomplete = () => resolve();
     tx.onerror = () => reject(tx.error);
-  });
-}
-
-export async function trimStore() {
-  const db = await openDB();
-  const tx = db.transaction(STORE_NAME, 'readwrite');
-  const store = tx.objectStore(STORE_NAME);
-
-  const request = store.getAll();
-
-  return new Promise((resolve, reject) => {
-    request.onsuccess = () => {
-      const records = request.result;
-      if (records.length > 3) {
-        records
-          .sort((a, b) => b.lastUpdate - a.lastUpdate)
-          .slice(3)
-          .forEach(record => store.delete(record.city));
-      }
-      tx.oncomplete = () => resolve();
-      tx.onerror = () => reject(tx.error);
-    };
   });
 }
 
@@ -72,8 +58,58 @@ export async function getStoredCities() {
 }
 
 export async function getMostRecentCity() {
-  const cities = await getStoredCities();
-  if (cities.length === 0) return null;
-  cities.sort((a, b) => b.lastUpdate - a.lastUpdate);
-  return cities[0];
+  const db = await openDB();
+  const tx = db.transaction(STORE_NAME, 'readonly');
+  const store = tx.objectStore(STORE_NAME);
+  const index = store.index('lastUpdate');
+
+  return new Promise((resolve, reject) => {
+    const request = index.openCursor(null, 'prev');
+    request.onsuccess = event => {
+      const cursor = event.target.result;
+      resolve(cursor ? cursor.value : null);
+    };
+    request.onerror = () => reject(request.error);
+  });
+}
+
+export async function getCityByName(city) {
+  const db = await openDB();
+  const tx = db.transaction(STORE_NAME, 'readonly');
+  const store = tx.objectStore(STORE_NAME);
+
+  const cityKey = city.toLowerCase();
+
+  return new Promise((resolve, reject) => {
+    const request = store.get(cityKey);
+    request.onsuccess = () => resolve(request.result || null);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+export async function trimStore(limit = 3) {
+  const db = await openDB();
+  const tx = db.transaction(STORE_NAME, 'readwrite');
+  const store = tx.objectStore(STORE_NAME);
+  const index = store.index('lastUpdate');
+
+  return new Promise((resolve, reject) => {
+    const request = store.getAll();
+    request.onsuccess = () => {
+      const records = request.result;
+      if (records.length <= limit) {
+        resolve();
+        return;
+      }
+
+      records
+        .sort((a, b) => b.lastUpdate - a.lastUpdate)
+        .slice(limit)
+        .forEach(record => store.delete(record.cityKey));
+
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+    };
+    request.onerror = () => reject(request.error);
+  });
 }
