@@ -1,3 +1,5 @@
+import { getCityByName, addCity } from './db.js';
+
 export const weatherWrapper = document.querySelector('.weather-wrapper');
 export const forecastContainer = document.querySelector('.forecast');
 export const memoryElement = document.querySelector('.memory');
@@ -18,18 +20,25 @@ export function getMemory(city, condition) {
 export async function updateMemoryLine({ city, condition, isOffline = false, isFresh = false }) {
   if (!city) return;
 
+  let text = '';
+
   if (isOffline) {
-    memoryElement.textContent = getOfflineMessage(city);
-    memoryElement.classList.add('loaded');
-    return;
+    text = getOfflineMessage(city);
   }
 
   if (isFresh) {
-    memoryElement.textContent = `Here's what the sky has to say about ${city}.`;
-    memoryElement.classList.add('loaded');
-    return;
+    text = `Here's what the sky has to say about ${city}.`;
   }
 
+  if (!isOffline && !isFresh && condition) {
+    const stored = await getCityByName(city);
+    const lastCondition = stored?.condition || condition;
+    text = getMemory(city, lastCondition);
+
+    await addCity(city, { condition });
+  }
+
+  memoryElement.textContent = text;
   memoryElement.classList.add('loaded');
 }
 
