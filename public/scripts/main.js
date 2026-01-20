@@ -65,7 +65,7 @@ async function updateCity(city) {
   // Offline: use stored data if available
   if (!navigator.onLine) {
     if (!storedCity) {
-      memoryElement.textContent = `No stored data for ${city} available offline.`;
+      memoryElement.textContent = `No stored data for ${city} available offline. The sky's being quiet.`;
       memoryElement.classList.add('loaded');
       weatherWrapper.classList.remove('hidden');
       showOfflineOverlay();
@@ -129,7 +129,7 @@ async function updateCity(city) {
     renderSavedCities(weatherData.details.EnglishName);
   } catch (err) {
     console.error('Failed to update city:', err);
-    memoryElement.textContent = `Could not load data for ${city}.`;
+    memoryElement.textContent = `Could not load data for ${city}. Maybe the sky's keeping secrets.`;
     memoryElement.classList.add('loaded');
     weatherWrapper.classList.remove('hidden');
   }
@@ -190,7 +190,7 @@ async function refreshWeatherData(force = false) {
     renderSavedCities(weatherData.details.EnglishName);
   } catch (err) {
     console.error('Failed to refresh weather data:', err);
-    memoryElement.textContent = `Could not refresh data for ${storedCity.city}.`;
+    memoryElement.textContent = `Could not refresh data for ${storedCity.city}. The forecast slipped out of reach.`;
     memoryElement.classList.add('loaded');
   }
 }
@@ -238,7 +238,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   if (storedCity) {
     await updateCity(storedCity.city);
   } else if (!navigator.onLine) {
-    memoryElement.textContent = 'No stored weather data available offline.';
+    memoryElement.textContent = 'No stored weather data available offline. The weather isn\'t talking right now.';
     memoryElement.classList.add('loaded');
     weatherWrapper.classList.remove('hidden');
     showOfflineOverlay();
