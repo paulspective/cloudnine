@@ -1,14 +1,14 @@
-# ☁️ CloudNine
+# CloudNine
 
 **Weather or not, we've got you covered.**
 
 CloudNine is a polished, interactive weather app that taps into the AccuWeather API to deliver real-time forecasts wrapped in smooth animations and a responsive design.
 
-## 📸 Screenshot
+## Screenshot
 
 ![CloudNine Preview](assets/cloudnine-screenshot.png)
 
-## ✨ Features
+## Features
 
 - Real-time weather and 5-day forecast via AccuWeather
 - Responsive design with smooth UI transitions
@@ -16,7 +16,7 @@ CloudNine is a polished, interactive weather app that taps into the AccuWeather 
 - Express backend with secure API integration
 - Local caching for faster refreshes
 
-## 🔧 Setup
+## Setup
 
 To run CloudNine locally:
 
@@ -49,7 +49,7 @@ npm run dev
 ```
 Open your browser at `http:localhost:PORT` (default 3000).
 
-## 🧠 Architecture
+## Architecture
 
 ```
 cloudnine/
@@ -76,17 +76,17 @@ cloudnine/
 └── README.md
 ```
 
-## 🧰 Tech Stack
+## Tech Stack
 - Frontend: HTML, CSS, JavaScript (Vanilla)
 - Backend: Node.js, Express
 - API: AccuWeather
 - Tools: Git, Live Server, npm
 
 
-## ❤️ Credits
+## Credits
 
 Uses data from AccuWeather API 
 
-Built with love, logic, and a little shimmer. ✨
+Built with love, logic, and a little shimmer.
 
 See [Changelog](CHANGELOG.md) for a detailed version history.
