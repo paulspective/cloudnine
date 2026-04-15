@@ -240,6 +240,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   } else if (!navigator.onLine) {
     memoryElement.textContent = 'No stored weather data available offline. The weather isn\'t talking right now.';
     memoryElement.classList.add('loaded');
+    showSkeletons();
     weatherWrapper.classList.remove('hidden');
     showOfflineOverlay();
   } else {
