@@ -34,8 +34,6 @@ export async function updateMemoryLine({ city, condition, isOffline = false, isF
     const stored = await getCityByName(city);
     const lastCondition = stored?.condition || condition;
     text = getMemory(city, lastCondition);
-
-    await addCity(city, { condition });
   }
 
   memoryElement.textContent = text;
