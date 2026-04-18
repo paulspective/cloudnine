@@ -69,32 +69,21 @@ body {
 /* Weather ripple */
 .weather-ripple {
   position: fixed;
-  top: 50%;
-  left: 50%;
-  width: 140vmax;
-  height: 140vmax;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0.25) 30%, rgba(255, 255, 255, 0.1) 60%, transparent 100%);
-  border-radius: 50%;
-  animation: rippleEffect 1.6s cubic-bezier(0.4, 0, 0.2, 1);
+  inset: 0;
+  clip-path: circle(0% at 50% 50%);
+  animation: rippleReveal 4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   pointer-events: none;
-  z-index: 0;
-  will-change: transform, opacity;
+  z-index: -1;
+  will-change: clip-path;
 }
 
-@keyframes rippleEffect {
+@keyframes rippleReveal {
   0% {
-    transform: translate(-50%, -50%) scale(0);
-    opacity: 0.8;
-  }
-
-  70% {
-    transform: translate(-50%, -50%) scale(1.2);
-    opacity: 0.4;
+    clip-path: circle(0% at 50% 50%);
   }
 
   100% {
-    transform: translate(-50%, -50%) scale(1.4);
-    opacity: 0;
+    clip-path: circle(150% at 50% 50%);
   }
 }
 

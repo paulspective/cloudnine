@@ -43,13 +43,9 @@ export async function updateMemoryLine({ city, condition, isOffline = false, isF
 }
 
 // Dynamic background
-let isTransitioning = false;
-
 export function setDynamicBackground(weather = 'clear') {
-  if (isTransitioning) return;
-  isTransitioning = true;
-
   const weatherType = (weather || '').toLowerCase();
+
   const gradients = {
     rain: 'linear-gradient(135deg, #3AB4B4, #7B8D9E)',
     drizzle: 'linear-gradient(135deg, #3AB4B4, #7B8D9E)',
@@ -68,25 +64,21 @@ export function setDynamicBackground(weather = 'clear') {
   );
   const newGradient = gradients[matchedKey] || gradients.default;
 
-  const currentBg = document.body.dataset.bgGradient;
-  if (currentBg === newGradient) {
-    isTransitioning = false;
-    return;
-  }
-
-  if (!document.body.style.transition.includes('background')) {
-    document.body.style.transition = 'background 1s ease';
-  }
-
-  const rippleLayer = document.createElement('div');
-  rippleLayer.className = 'weather-ripple';
-  document.body.appendChild(rippleLayer);
-  rippleLayer.addEventListener('animationend', () => rippleLayer.remove());
+  if (document.body.dataset.bgGradient === newGradient) return;
 
   document.body.style.background = newGradient;
   document.body.dataset.bgGradient = newGradient;
 
-  setTimeout(() => (isTransitioning = false), 1000);
+  document.querySelectorAll('.weather-ripple').forEach(el => el.remove());
+
+  const rippleLayer = document.createElement('div');
+  rippleLayer.className = 'weather-ripple';
+  rippleLayer.style.background = newGradient;
+  document.body.appendChild(rippleLayer);
+
+  rippleLayer.addEventListener('animationend', () => {
+    rippleLayer.remove();
+  });
 }
 
 // UI skeletons
