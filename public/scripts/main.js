@@ -24,7 +24,7 @@ function hasForecastChanged(a = [], b = []) {
   return a.some((f, i) => f.date !== b[i].date || f.condition !== b[i].condition);
 }
 
-// Render saved cities list (always shows 2 others besides current)
+// Render saved cities list (always shows 3 others besides current)
 async function renderSavedCities(currentCity) {
   const container = document.getElementById('recentCitiesList');
   if (!container) return;
@@ -34,16 +34,36 @@ async function renderSavedCities(currentCity) {
   // Exclude current city
   const others = cities.filter(c => !currentCity || c.city !== currentCity);
 
-  // Sort by lastUpdate descending and pick top 2
+  // Sort by lastUpdate descending and pick top 3
   const recent = others
     .sort((a, b) => b.lastUpdate - a.lastUpdate)
-    .slice(0, 2);
+    .slice(0, 3);
 
   container.innerHTML = '';
 
+  const label = container.parentElement.querySelector('span');
+
   if (!recent.length) {
-    container.parentElement.style.display = 'none';
-    return;
+    const hasAnyCities = cities.length > 0;
+
+    if (hasAnyCities) {
+      container.parentElement.style.display = 'none';
+      return;
+    }
+
+    label.textContent = 'Start with:';
+    const defaults = ['New York', 'London', 'Tokyo', 'Paris'];
+    defaults.forEach(city => {
+      const btn = document.createElement('button');
+      btn.textContent = city;
+      btn.addEventListener('click', () => updateCity(city));
+      container.appendChild(btn);
+    });
+
+    container.parentElement.style.display = 'flex';
+  } else {
+    label.textContent = 'Back to:';
+    container.parentElement.style.display = 'flex';
   }
 
   recent.forEach(c => {
@@ -124,7 +144,7 @@ async function updateCity(city) {
       forecast: newForecast
     });
 
-    await trimStore(3, weatherData.details.EnglishName);
+    await trimStore(4, weatherData.details.EnglishName);
 
     renderSavedCities(weatherData.details.EnglishName);
   } catch (err) {
@@ -234,6 +254,7 @@ cityForm.addEventListener('submit', e => {
 // Initial load
 window.addEventListener('DOMContentLoaded', async () => {
   const storedCity = await getMostRecentCity();
+  renderSavedCities(storedCity?.city || null);
 
   if (storedCity) {
     await updateCity(storedCity.city);
