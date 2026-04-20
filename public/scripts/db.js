@@ -114,7 +114,7 @@ export async function getMostRecentCity() {
   }
 }
 
-export async function trimStore(max = 3, currentCity = null) {
+export async function trimStore(max = 4, currentCity = null) {
   const db = await openDB();
   const tx = db.transaction(STORE_NAME, 'readwrite');
   const store = tx.objectStore(STORE_NAME);
