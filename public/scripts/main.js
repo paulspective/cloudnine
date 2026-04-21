@@ -206,7 +206,7 @@ async function refreshWeatherData(force = false) {
       forecast: forecastData.forecast || []
     });
 
-    await trimStore(3, weatherData.details.EnglishName);
+    await trimStore(4, weatherData.details.EnglishName);
     renderSavedCities(weatherData.details.EnglishName);
   } catch (err) {
     console.error('Failed to refresh weather data:', err);
